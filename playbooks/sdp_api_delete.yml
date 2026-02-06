@@ -1,0 +1,25 @@
+- name: Delete a Problem (DELETE)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - credentials.yml
+
+  tasks:
+    - name: Delete Problem
+      manageengine.sdp_cloud.delete_record:
+        domain: "{{ domain }}"
+        parent_module_name: "problem"
+        parent_id: "100" # Replace with actual Problem ID
+        client_id: "{{ client_id }}"
+        client_secret: "{{ client_secret }}"
+        refresh_token: "{{ refresh_token }}"
+        dc: "{{ dc }}"
+        portal_name: "{{ portal_name }}"
+      register: delete_response
+
+    - name: Display Delete Response
+      ansible.builtin.debug:
+        msg:
+          - "{{ delete_response }}"
