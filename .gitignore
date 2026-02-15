@@ -1,11 +1,15 @@
 /tests/output/
 /changelogs/.plugin-cache.yaml
-
+/agent_doc/
+/local_collections/
+/ansible.cfg
+.agent/
 
 # Credentials
 credentials.yml
 */credentials.yml
 *credentials.yml
+*/test_template.yml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

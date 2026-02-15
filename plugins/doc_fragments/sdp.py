@@ -8,26 +8,34 @@ __metaclass__ = type
 
 class ModuleDocFragment(object):
 
-    # Standard documentation fragment
+    # Standard documentation fragment for all SDP Cloud modules
     DOCUMENTATION = r'''
 options:
-  client_id:
+  domain:
     description:
-      - The Client ID generated from the Zoho API Console.
+      - The domain URL of your ServiceDesk Plus Cloud instance.
+      - For example, C(sdpondemand.manageengine.com) or C(sdp.zoho.eu).
     type: str
-  client_secret:
+    required: true
+  portal_name:
     description:
-      - The Client Secret generated from the Zoho API Console.
+      - The portal name of your ServiceDesk Plus Cloud instance (e.g., C(ithelpdesk)).
     type: str
-
-  refresh_token:
+    required: true
+  auth_token:
     description:
-      - The long-lived refresh token.
+      - The OAuth access token for authenticating API requests.
+      - Mutually exclusive with I(client_id), I(client_secret), and I(refresh_token).
     type: str
-
-  dc:
+  parent_module_name:
     description:
-      - The Data Center location (e.g., US, EU).
+      - The ITSM module to operate on.
     type: str
-    choices: [US, EU, IN, AU, CN, JP, CA, SA]
+    required: true
+    choices: [request, problem, change, release]
+  parent_id:
+    description:
+      - The ID of the specific record to operate on.
+      - Required for update, get-by-id, and delete operations.
+    type: str
 '''

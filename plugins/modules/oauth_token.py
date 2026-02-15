@@ -9,14 +9,14 @@ DOCUMENTATION = r'''
 ---
 module: oauth_token
 author:
-  - Harish Kumar (@HKHARI)
+  - Harish Kumar (@harishkumar-k-7052)
 short_description: Generate ManageEngine SDP Cloud OAuth Access Token
 description:
   - Generates a temporary OAuth access token using a refresh token.
   - This token is required for authenticating against the ServiceDesk Plus Cloud API.
   - The access token is valid for 1 hour.
 extends_documentation_fragment:
-  - manageengine.sdp_cloud.sdp
+  - manageengine.sdp_cloud.auth
 options:
   client_id:
     description:
@@ -33,12 +33,6 @@ options:
       - The long-lived refresh token.
     type: str
     required: true
-  dc:
-    description:
-      - The Data Center location (e.g., US, EU).
-    type: str
-    required: true
-    choices: [US, EU, IN, AU, CN, JP, CA, SA]
 '''
 
 EXAMPLES = r'''
@@ -52,11 +46,13 @@ EXAMPLES = r'''
   no_log: true
 
 - name: Use the token in subsequent tasks
-  manageengine.sdp_cloud.request_info:
+  manageengine.sdp_cloud.read_record:
     domain: "sdpondemand.manageengine.com"
     portal_name: "ithelpdesk"
+    parent_module_name: "request"
+    parent_id: "100"
     auth_token: "{{ auth_response.access_token }}"
-    request_id: "100"
+    dc: "US"
 '''
 
 RETURN = r'''
@@ -88,7 +84,7 @@ def run_module():
 
     module = AnsibleModule(
         argument_spec=module_args,
-        supports_check_mode=False
+        supports_check_mode=True
     )
 
     client_id = module.params['client_id']

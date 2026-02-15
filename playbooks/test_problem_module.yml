@@ -1,3 +1,4 @@
+---
 - name: Test All Modules - Problem Lifecycle
   hosts: localhost
   connection: local
@@ -73,7 +74,7 @@
     - name: Display Problem List
       ansible.builtin.debug:
         msg: "ID: {{ item.id }} | Title: {{ item.title }}"
-      loop: "{{ list_problems.response.problems }}"
+      loop: "{{ list_problems.response.problems | default([]) }}"
       loop_control:
         label: "Problem {{ item.id }}"
 
@@ -96,10 +97,11 @@
 
     # Step 6: Delete the problem we created
     - name: Delete the Problem
-      manageengine.sdp_cloud.delete_record:
+      manageengine.sdp_cloud.write_record:
         domain: "{{ domain }}"
         parent_module_name: "problem"
         parent_id: "{{ created_problem.response.problem.id }}"
+        state: absent
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
