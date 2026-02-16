@@ -71,7 +71,7 @@ Here are a few common automation scenarios enabled by this collection:
 
 | Name | Description |
 | ---- | ----------- |
-| [oauth_token](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/oauth_token.py) | Generate ManageEngine SDP Cloud OAuth Access Token |
+| [oauth_token](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/oauth_token.py) | Generate ManageEngine SDP Cloud OAuth Access Token  |
 | [read_record](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/read_record.py) | Read API module for ManageEngine ServiceDesk Plus Cloud |
 | [write_record](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/write_record.py) | Manage records (create, update, delete) in ManageEngine ServiceDesk Plus Cloud |
 
