@@ -13,9 +13,9 @@ tags:
   - itsm
   - cloud
 dependencies: {}
-repository: https://github.com/ManageEngine/manageengine.sdpcloud
-homepage: https://github.com/ManageEngine/manageengine.sdpcloud
-issues: https://github.com/ManageEngine/manageengine.sdpcloud/issues
+repository: https://github.com/ManageEngine/manageengine.sdp_cloud
+homepage: https://github.com/ManageEngine/manageengine.sdp_cloud
+issues: https://github.com/ManageEngine/manageengine.sdp_cloud/issues
 build_ignore:
   - .gitignore
   - .vscode
