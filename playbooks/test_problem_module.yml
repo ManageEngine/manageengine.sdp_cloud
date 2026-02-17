@@ -1,5 +1,5 @@
 ---
-- name: Test All Modules - Problem Lifecycle
+- name: Test Problem Module - Full Lifecycle
   hosts: localhost
   connection: local
   gather_facts: false
@@ -19,53 +19,50 @@
 
     # Step 2: Create a Problem
     - name: Create a Problem
-      manageengine.sdp_cloud.write_record:
+      manageengine.sdp_cloud.problem:
         domain: "{{ domain }}"
-        parent_module_name: "problem"
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
+        title: "Test Problem - Lifecycle Script"
         payload:
-          title: "Test_all_module_script"
-          description: "Created via test_all_module_script"
+          description: "Created via test_problem_module playbook"
           priority: "High"
       register: created_problem
 
     - name: Display Created Problem
       ansible.builtin.debug:
         msg:
-          - "ID: {{ created_problem.response.problem.id }}"
-          - "Title: {{ created_problem.response.problem.title }}"
+          - "ID: {{ created_problem.problem_id }}"
+          - "Title: {{ created_problem.problem.title }}"
 
     # Step 3: Update the same Problem
     - name: Update the Problem
-      manageengine.sdp_cloud.write_record:
+      manageengine.sdp_cloud.problem:
         domain: "{{ domain }}"
-        parent_module_name: "problem"
-        parent_id: "{{ created_problem.response.problem.id }}"
+        problem_id: "{{ created_problem.problem_id }}"
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
+        title: "Test Problem - Updated"
         payload:
-          title: "Test_all_module_script - Updated"
           priority: "Low"
       register: updated_problem
 
     - name: Display Updated Problem
       ansible.builtin.debug:
         msg:
-          - "ID: {{ updated_problem.response.problem.id }}"
-          - "Title: {{ updated_problem.response.problem.title }}"
+          - "ID: {{ updated_problem.problem_id }}"
+          - "Title: {{ updated_problem.problem.title }}"
 
     # Step 4: Get problems without ID (list)
     - name: Get Problems (List)
-      manageengine.sdp_cloud.read_record:
+      manageengine.sdp_cloud.problem_info:
         domain: "{{ domain }}"
-        parent_module_name: "problem"
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
-        payload:
+        list_options:
           row_count: 1
           sort_field: "created_time"
           sort_order: "desc"
@@ -74,16 +71,15 @@
     - name: Display Problem List
       ansible.builtin.debug:
         msg: "ID: {{ item.id }} | Title: {{ item.title }}"
-      loop: "{{ list_problems.response.problems | default([]) }}"
+      loop: "{{ list_problems.problems | default([]) }}"
       loop_control:
         label: "Problem {{ item.id }}"
 
     # Step 5: Get the same problem by ID
     - name: Get Problem by ID
-      manageengine.sdp_cloud.read_record:
+      manageengine.sdp_cloud.problem_info:
         domain: "{{ domain }}"
-        parent_module_name: "problem"
-        parent_id: "{{ created_problem.response.problem.id }}"
+        problem_id: "{{ created_problem.problem_id }}"
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
@@ -92,15 +88,14 @@
     - name: Display Problem Details
       ansible.builtin.debug:
         msg:
-          - "ID: {{ get_problem.response.problem.id }}"
-          - "Title: {{ get_problem.response.problem.title }}"
+          - "ID: {{ get_problem.problem.id }}"
+          - "Title: {{ get_problem.problem.title }}"
 
     # Step 6: Delete the problem we created
     - name: Delete the Problem
-      manageengine.sdp_cloud.write_record:
+      manageengine.sdp_cloud.problem:
         domain: "{{ domain }}"
-        parent_module_name: "problem"
-        parent_id: "{{ created_problem.response.problem.id }}"
+        problem_id: "{{ created_problem.problem_id }}"
         state: absent
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
@@ -109,4 +104,4 @@
 
     - name: Display Delete Result
       ansible.builtin.debug:
-        msg: "Problem {{ created_problem.response.problem.id }} deleted successfully."
+        msg: "Problem {{ created_problem.problem_id }} deleted successfully."

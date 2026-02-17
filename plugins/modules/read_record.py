@@ -66,75 +66,11 @@ from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.api_util im
     SDPClient, common_argument_spec, check_module_config, construct_endpoint,
     AUTH_MUTUALLY_EXCLUSIVE, AUTH_REQUIRED_TOGETHER
 )
-from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.sdp_config import MODULE_CONFIG
 
-
-def construct_payload(module):
-    """Validate and construct the payload."""
-    # ID Handling: If ID is present, no payload (list_info) is allowed/needed
-    if module.params.get('parent_id'):
-        return None
-
-    payload = module.params['payload']
-    if not payload:
-        return None
-
-    # Fetch configuration for validation
-    parent_module = module.params['parent_module_name']
-    module_config = MODULE_CONFIG.get(parent_module)
-
-    allowed_sort_fields = module_config.get('sortable_fields', [])
-
-    validated_payload = {}
-
-    # Allowed keys for list_info
-    allowed_keys = ['row_count', 'sort_field', 'sort_order', 'get_total_count', 'start_index']
-
-    for key in payload.keys():
-        if key not in allowed_keys:
-            module.fail_json(msg="Invalid payload key '{0}'. Allowed keys: {1}".format(key, allowed_keys))
-
-    # 1. row_count
-    row_count = payload.get('row_count', 10)
-    try:
-        row_count = int(row_count)
-    except ValueError:
-        module.fail_json(msg="row_count must be an integer.")
-
-    if not (1 <= row_count <= 100):
-        module.fail_json(msg="row_count must be between 1 and 100.")
-    validated_payload['row_count'] = row_count
-
-    # 2. sort_field
-    sort_field = payload.get('sort_field', 'created_time')
-
-    # Validate against configured sortable_fields
-    if allowed_sort_fields and sort_field not in allowed_sort_fields:
-        module.fail_json(msg="Invalid sort_field '{0}'. Allowed fields: {1}".format(sort_field, allowed_sort_fields))
-
-    validated_payload['sort_field'] = sort_field
-
-    # 3. sort_order
-    sort_order = payload.get('sort_order', 'asc')
-    if sort_order not in ['asc', 'desc']:
-        module.fail_json(msg="Invalid sort_order '{0}'. Allowed values: ['asc', 'desc']".format(sort_order))
-    validated_payload['sort_order'] = sort_order
-
-    # 4. get_total_count
-    get_total_count = payload.get('get_total_count', False)
-    if isinstance(get_total_count, str):
-        if get_total_count.lower() == 'true':
-            get_total_count = True
-        elif get_total_count.lower() == 'false':
-            get_total_count = False
-        else:
-            module.fail_json(msg="get_total_count must be a boolean.")
-    elif not isinstance(get_total_count, bool):
-        module.fail_json(msg="get_total_count must be a boolean.")
-
-    validated_payload['get_total_count'] = get_total_count
-
-    return {"list_info": validated_payload}
+# Re-export so existing tests that import construct_payload from this module continue to work
+from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.read_helpers import (  # noqa: F401
+    construct_list_payload as construct_payload,
+)
 
 
 def run_module():

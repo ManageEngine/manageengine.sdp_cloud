@@ -1,5 +1,5 @@
 ---
-- name: Test All Modules - Request Lifecycle
+- name: Test Request Module - Full Lifecycle
   hosts: localhost
   connection: local
   gather_facts: false
@@ -19,54 +19,50 @@
 
     # Step 2: Create a Request
     - name: Create a Request
-      manageengine.sdp_cloud.write_record:
+      manageengine.sdp_cloud.request:
         domain: "{{ domain }}"
-        parent_module_name: "request"
         auth_token: "{{ token_output.access_token }}"
-        requester: "{{ requester }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
+        subject: "Test Request - Lifecycle Script"
         payload:
-          subject: "Test Request - Lifecycle Script"
           description: "Created via test_request_module playbook"
-          priority: "High"
+          requester: "{{ requester }}"
       register: created_request
 
     - name: Display Created Request
       ansible.builtin.debug:
         msg:
-          - "ID: {{ created_request.response.request.id }}"
-          - "Subject: {{ created_request.response.request.subject }}"
+          - "ID: {{ created_request.request_id }}"
+          - "Subject: {{ created_request.request.subject }}"
 
     # Step 3: Update the same Request
     - name: Update the Request
-      manageengine.sdp_cloud.write_record:
+      manageengine.sdp_cloud.request:
         domain: "{{ domain }}"
-        parent_module_name: "request"
-        parent_id: "{{ created_request.response.request.id }}"
+        request_id: "{{ created_request.request_id }}"
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
+        subject: "Test Request - Updated"
         payload:
-          subject: "Test Request - Updated"
           priority: "Low"
       register: updated_request
 
     - name: Display Updated Request
       ansible.builtin.debug:
         msg:
-          - "ID: {{ updated_request.response.request.id }}"
-          - "Subject: {{ updated_request.response.request.subject }}"
+          - "ID: {{ updated_request.request_id }}"
+          - "Subject: {{ updated_request.request.subject }}"
 
     # Step 4: Get requests without ID (list)
     - name: Get Requests (List)
-      manageengine.sdp_cloud.read_record:
+      manageengine.sdp_cloud.request_info:
         domain: "{{ domain }}"
-        parent_module_name: "request"
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
-        payload:
+        list_options:
           row_count: 1
           sort_field: "created_time"
           sort_order: "desc"
@@ -75,16 +71,15 @@
     - name: Display Request List
       ansible.builtin.debug:
         msg: "ID: {{ item.id }} | Subject: {{ item.subject }}"
-      loop: "{{ list_requests.response.requests | default([]) }}"
+      loop: "{{ list_requests.requests | default([]) }}"
       loop_control:
         label: "Request {{ item.id }}"
 
     # Step 5: Get the same request by ID
     - name: Get Request by ID
-      manageengine.sdp_cloud.read_record:
+      manageengine.sdp_cloud.request_info:
         domain: "{{ domain }}"
-        parent_module_name: "request"
-        parent_id: "{{ created_request.response.request.id }}"
+        request_id: "{{ created_request.request_id }}"
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
@@ -93,15 +88,14 @@
     - name: Display Request Details
       ansible.builtin.debug:
         msg:
-          - "ID: {{ get_request.response.request.id }}"
-          - "Subject: {{ get_request.response.request.subject }}"
+          - "ID: {{ get_request.request.id }}"
+          - "Subject: {{ get_request.request.subject }}"
 
     # Step 6: Delete the request we created
     - name: Delete the Request
-      manageengine.sdp_cloud.write_record:
+      manageengine.sdp_cloud.request:
         domain: "{{ domain }}"
-        parent_module_name: "request"
-        parent_id: "{{ created_request.response.request.id }}"
+        request_id: "{{ created_request.request_id }}"
         state: absent
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
@@ -110,4 +104,4 @@
 
     - name: Display Delete Result
       ansible.builtin.debug:
-        msg: "Request {{ created_request.response.request.id }} deleted successfully."
+        msg: "Request {{ created_request.request_id }} deleted successfully."

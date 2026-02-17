@@ -45,14 +45,32 @@ def _ensure_module_aliases():
     resolve to the same module objects in sys.modules."""
     # Import the module_utils via the direct path first
     prefixes = [
+        # conf package
+        ('plugins.module_utils.conf', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.conf'),
+        ('plugins.module_utils.conf.request', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.conf.request'),
+        ('plugins.module_utils.conf.problem', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.conf.problem'),
+        ('plugins.module_utils.conf.change', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.conf.change'),
+        ('plugins.module_utils.conf.release', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.conf.release'),
+        # module_utils
         ('plugins.module_utils.api_util', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.api_util'),
         ('plugins.module_utils.error_handler', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.error_handler'),
         ('plugins.module_utils.oauth', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.oauth'),
         ('plugins.module_utils.sdp_config', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.sdp_config'),
         ('plugins.module_utils.udf_utils', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.udf_utils'),
+        ('plugins.module_utils.write_helpers', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.write_helpers'),
+        ('plugins.module_utils.read_helpers', 'ansible_collections.manageengine.sdp_cloud.plugins.module_utils.read_helpers'),
+        # modules
         ('plugins.modules.write_record', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.write_record'),
         ('plugins.modules.read_record', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.read_record'),
         ('plugins.modules.oauth_token', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.oauth_token'),
+        ('plugins.modules.request', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.request'),
+        ('plugins.modules.request_info', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.request_info'),
+        ('plugins.modules.problem', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.problem'),
+        ('plugins.modules.problem_info', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.problem_info'),
+        ('plugins.modules.change', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.change'),
+        ('plugins.modules.change_info', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.change_info'),
+        ('plugins.modules.release', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.release'),
+        ('plugins.modules.release_info', 'ansible_collections.manageengine.sdp_cloud.plugins.modules.release_info'),
     ]
     for short, long in prefixes:
         try:

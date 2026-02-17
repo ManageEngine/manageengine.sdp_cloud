@@ -40,8 +40,12 @@ ENV_CLIENT_SECRET = 'SDP_CLOUD_CLIENT_SECRET'
 ENV_REFRESH_TOKEN = 'SDP_CLOUD_REFRESH_TOKEN'
 
 
-def common_argument_spec():
-    """Return common argument specification for SDP modules."""
+def base_argument_spec():
+    """Return base argument specification with auth and connection options only.
+
+    Used by entity-specific modules (request, request_info, etc.) that
+    hardcode parent_module_name internally.
+    """
     return dict(
         domain=dict(type='str', required=True),
         portal_name=dict(type='str', required=True),
@@ -50,9 +54,21 @@ def common_argument_spec():
         client_secret=dict(type='str', no_log=True, fallback=(env_fallback, [ENV_CLIENT_SECRET])),
         refresh_token=dict(type='str', no_log=True, fallback=(env_fallback, [ENV_REFRESH_TOKEN])),
         dc=dict(type='str', required=True, choices=DC_CHOICES),
+    )
+
+
+def common_argument_spec():
+    """Return common argument specification for generic SDP modules.
+
+    Extends base_argument_spec with parent_module_name and parent_id,
+    used by generic modules like read_record and write_record.
+    """
+    spec = base_argument_spec()
+    spec.update(dict(
         parent_module_name=dict(type='str', required=True, choices=list(MODULE_CONFIG.keys())),
         parent_id=dict(type='str'),
-    )
+    ))
+    return spec
 
 
 def get_auth_params(module):
