@@ -1,38 +1,14 @@
 ---
-name: Release the ansible collection
-on:
-  workflow_call:
-    inputs:
-      ah_publish:
-        description: Publish the collection on automation hub
-        default: true
-        type: boolean
-      environment:
-        description: The deployment environment
-        required: true
-        type: string
-      galaxy_publish:
-        default: true
-        description: Publish the collection on galaxy
-        type: boolean
-    secrets:
-      ah_token:
-        required: false
-      ansible_galaxy_api_key:
-        required: false
-
+name: Release the Ansible collection
+"on":
+  release:
+    types: [published]
+ 
 jobs:
-  release_automation_hub:
-    uses: ansible/team-devtools/.github/workflows/release_ah.yml@main
+  release:
+    uses: ansible/devtools/.github/workflows/release_collection.yml@main
     with:
       environment: release
     secrets:
-      ah_token: ${{ secrets.ah_token }}
-
-  release_galaxy:
-    uses: ansible/team-devtools/.github/workflows/release_galaxy.yml@main
-    needs: [release_automation_hub]
-    with:
-      environment: release
-    secrets:
-      ansible_galaxy_api_key: ${{ secrets.ansible_galaxy_api_key }}
+      ah_token: ${{ secrets.AH_TOKEN }}
+      ansible_galaxy_api_key: ${{ secrets.ANSIBLE_GALAXY_API_KEY }}
