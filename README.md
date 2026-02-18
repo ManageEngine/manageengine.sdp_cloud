@@ -46,7 +46,7 @@ See [using Ansible collections](https://docs.ansible.com/ansible/devel/user_guid
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/HKHARI/AnsibleCollections.git
+   git clone https://github.com/ManageEngine/manageengine.sdp_cloud.git
    ```
 2. Navigate to the collection directory:
    ```bash
@@ -226,7 +226,7 @@ You can also contact SDP Cloud support at <servicedeskplus-cloud-support@managee
 
 ## Release Notes and Roadmap
 
-For the latest changes, please refer to the [Changelogs](https://github.com/HKHARI/AnsibleCollections/blob/main/manageengine/sdp_cloud/changelogs/changelog.yaml) or GitHub Releases.
+For the latest changes, please refer to the [Changelogs](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/changelogs/changelog.yaml) or GitHub Releases.
 
 ## Related Information
 
@@ -235,5 +235,4 @@ For the latest changes, please refer to the [Changelogs](https://github.com/HKHA
 
 ## License Information
 
-This collection is licensed under the GNU General Public License v3.0 or later.
-See: [LICENSE](LICENSE)
+This collection is licensed under the GNU General Public License v3.0 or later. See: https://www.gnu.org/licenses/gpl-3.0.txt
