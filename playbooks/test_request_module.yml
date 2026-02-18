@@ -62,10 +62,9 @@
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
-        list_options:
-          row_count: 1
-          sort_field: "created_time"
-          sort_order: "desc"
+        row_count: 1
+        sort_field: "created_time"
+        sort_order: "desc"
       register: list_requests
 
     - name: Display Request List

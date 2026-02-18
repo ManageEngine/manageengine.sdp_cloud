@@ -265,15 +265,15 @@ class SDPClient:
 
         return result
 
-    def get_record(self, endpoint):
-        """Fetch a single record by endpoint. Returns None if not found (HTTP 404)."""
+    def fetch_existing_record(self, endpoint):
+        """Fetch a single record for idempotency checks. Returns None if not found."""
         self._ensure_auth()
 
         url = "{0}/{1}".format(self.base_url, endpoint)
 
         headers = {
             'Authorization': 'Zoho-oauthtoken {0}'.format(self.auth_token),
-            'Accept': 'application/v3+json'
+            'Accept': 'application/vnd.manageengine.sdp.v3+json'
         }
 
         response, info = fetch_url(
@@ -285,7 +285,6 @@ class SDPClient:
 
         status_code = info.get('status', -1)
 
-        # 404 means record does not exist -- return None instead of failing
         if status_code == 404 or not response:
             return None
 
@@ -296,6 +295,10 @@ class SDPClient:
         try:
             return json.loads(body)
         except ValueError:
+            self.module.warn(
+                "Failed to parse JSON response from {0} (HTTP {1}). "
+                "Idempotency check skipped.".format(endpoint, status_code)
+            )
             return None
 
 
@@ -311,7 +314,7 @@ def get_current_record(client, module):
         return None
 
     endpoint = construct_endpoint(module)
-    result = client.get_record(endpoint)
+    result = client.fetch_existing_record(endpoint)
 
     if not result:
         return None

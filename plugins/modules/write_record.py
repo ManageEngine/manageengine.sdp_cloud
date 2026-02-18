@@ -86,6 +86,16 @@ response:
   description: The raw response from the SDP Cloud API.
   returned: always
   type: dict
+  sample:
+    response_status:
+      status_code: 2000
+      status: "success"
+    request:
+      id: "234567890123456"
+      subject: "Server down in DC-2"
+      status:
+        name: "Open"
+        id: "100000000000001"
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -114,7 +124,10 @@ def run_module():
         argument_spec=module_args,
         supports_check_mode=True,
         mutually_exclusive=AUTH_MUTUALLY_EXCLUSIVE,
-        required_together=AUTH_REQUIRED_TOGETHER
+        required_together=AUTH_REQUIRED_TOGETHER,
+        required_if=[
+            ('state', 'absent', ('parent_id',)),
+        ],
     )
 
     # Validation

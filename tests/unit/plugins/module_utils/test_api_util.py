@@ -321,7 +321,7 @@ class TestSDPClient:
         mock_sleep.assert_called_once_with(1)  # retry_delay * 2^0
 
     @patch(FETCH_URL_PATH)
-    def test_get_record_returns_none_on_404(self, mock_fetch):
+    def test_fetch_existing_record_returns_none_on_404(self, mock_fetch):
         mock_fetch.return_value = build_fetch_url_error(404, msg='Not Found')
 
         client, module = self._make_client({
@@ -332,11 +332,11 @@ class TestSDPClient:
             'refresh_token': None, 'dc': 'US',
         })
 
-        result = client.get_record('requests/999')
+        result = client.fetch_existing_record('requests/999')
         assert result is None
 
     @patch(FETCH_URL_PATH)
-    def test_get_record_returns_data(self, mock_fetch):
+    def test_fetch_existing_record_returns_data(self, mock_fetch):
         record = {'request': {'id': '1', 'subject': 'Test'}}
         mock_fetch.return_value = build_fetch_url_response(record)
 
@@ -348,7 +348,7 @@ class TestSDPClient:
             'refresh_token': None, 'dc': 'US',
         })
 
-        result = client.get_record('requests/1')
+        result = client.fetch_existing_record('requests/1')
         assert result == record
 
     def test_missing_auth_fails(self):

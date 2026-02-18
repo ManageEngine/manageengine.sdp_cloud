@@ -9,7 +9,7 @@ import pytest
 
 from tests.unit.conftest import create_mock_module
 from plugins.module_utils.sdp_config import MODULE_CONFIG
-from plugins.module_utils.write_helpers import handle_present, handle_absent
+from plugins.module_utils.write_helpers import handle_present
 
 
 PROBLEM_CONFIG = MODULE_CONFIG['problem']
@@ -69,18 +69,3 @@ class TestProblemTitleValidation:
         assert module.params['payload']['priority'] == 'High'
 
 
-# ---------------------------------------------------------------------------
-# Delete validation
-# ---------------------------------------------------------------------------
-class TestProblemDeleteValidation:
-    def test_delete_requires_problem_id(self):
-        """Deleting without problem_id should fail."""
-        module = create_mock_module({
-            'parent_module_name': 'problem',
-            'parent_id': None,
-            'state': 'absent',
-        })
-        with pytest.raises(SystemExit):
-            handle_absent(module, None, 'problems', PROBLEM_CONFIG)
-        module.fail_json.assert_called_once()
-        assert 'problem_id' in module.fail_json.call_args[1]['msg']

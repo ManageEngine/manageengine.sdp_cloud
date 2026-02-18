@@ -147,12 +147,8 @@ def handle_absent(module, client, endpoint, entity_config):
     """
     from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.api_util import get_current_record
 
-    id_param = entity_config.get('id_param', 'parent_id')
     parent_module = module.params['parent_module_name']
     parent_id = module.params.get('parent_id')
-
-    if not parent_id:
-        module.fail_json(msg="'{0}' is required when state=absent.".format(id_param))
 
     current_record = get_current_record(client, module)
 
@@ -224,7 +220,6 @@ def handle_present(module, client, endpoint, entity_config):
             result = dict(
                 changed=False,
                 response={parent_module: current_record},
-                payload=data,
             )
             result[parent_module] = current_record
             result[id_param] = parent_id
@@ -234,7 +229,6 @@ def handle_present(module, client, endpoint, entity_config):
         result = dict(
             changed=True,
             msg="Would {0} a {1} record.".format('update' if method == 'PUT' else 'create', parent_module),
-            payload=data,
         )
         if module._diff and current_record:
             result['diff'] = {'before': current_record, 'after': data.get(parent_module, {})}
@@ -246,9 +240,6 @@ def handle_present(module, client, endpoint, entity_config):
     result = dict(
         changed=True,
         response=response,
-        payload=data,
-        endpoint=endpoint,
-        method=method,
     )
     result[parent_module] = entity_record
     result[id_param] = entity_record.get('id')

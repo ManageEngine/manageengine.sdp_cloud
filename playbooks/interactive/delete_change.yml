@@ -1,0 +1,47 @@
+---
+- name: Delete a Change via write_record (Interactive)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - credentials.yml
+
+  vars_prompt:
+    - name: change_id
+      prompt: "Enter the Change ID to delete"
+      private: false
+
+  tasks:
+    - name: Validate input
+      ansible.builtin.assert:
+        that:
+          - change_id | length > 0
+        fail_msg: "Change ID is required. Please re-run and provide a value."
+
+    - name: Fetch OAuth Token
+      manageengine.sdp_cloud.oauth_token:
+        client_id: "{{ client_id }}"
+        client_secret: "{{ client_secret }}"
+        refresh_token: "{{ refresh_token }}"
+        dc: "{{ dc }}"
+      register: token_output
+      no_log: true
+
+    - name: Delete the Change using write_record
+      manageengine.sdp_cloud.write_record:
+        domain: "{{ domain }}"
+        parent_module_name: "change"
+        parent_id: "{{ change_id }}"
+        auth_token: "{{ token_output.access_token }}"
+        dc: "{{ dc }}"
+        portal_name: "{{ portal_name }}"
+        state: absent
+      register: delete_result
+
+    - name: Display result
+      ansible.builtin.debug:
+        msg:
+          - "══════════════════════════════════════════"
+          - "  Change {{ change_id }} deleted successfully!"
+          - "══════════════════════════════════════════"

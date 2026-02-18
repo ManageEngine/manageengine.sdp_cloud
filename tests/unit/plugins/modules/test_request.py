@@ -9,7 +9,7 @@ import pytest
 
 from tests.unit.conftest import create_mock_module
 from plugins.module_utils.sdp_config import MODULE_CONFIG
-from plugins.module_utils.write_helpers import handle_present, handle_absent
+from plugins.module_utils.write_helpers import handle_present
 
 
 REQUEST_CONFIG = MODULE_CONFIG['request']
@@ -163,18 +163,3 @@ class TestRequestConstructPayload:
         module.fail_json.assert_called_once()
 
 
-# ---------------------------------------------------------------------------
-# Delete validation
-# ---------------------------------------------------------------------------
-class TestRequestDeleteValidation:
-    def test_delete_requires_request_id(self):
-        """Deleting without request_id should fail."""
-        module = create_mock_module({
-            'parent_module_name': 'request',
-            'parent_id': None,
-            'state': 'absent',
-        })
-        with pytest.raises(SystemExit):
-            handle_absent(module, None, 'requests', REQUEST_CONFIG)
-        module.fail_json.assert_called_once()
-        assert 'request_id' in module.fail_json.call_args[1]['msg']

@@ -71,9 +71,17 @@ Here are a few common automation scenarios enabled by this collection:
 
 | Name | Description |
 | ---- | ----------- |
-| [oauth_token](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/oauth_token.py) | Generate ManageEngine SDP Cloud OAuth Access Token  |
-| [read_record](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/read_record.py) | Read API module for ManageEngine ServiceDesk Plus Cloud |
-| [write_record](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/write_record.py) | Manage records (create, update, delete) in ManageEngine ServiceDesk Plus Cloud |
+| [oauth_token](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/oauth_token.py) | Generate ManageEngine SDP Cloud OAuth access token |
+| [request](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/request.py) | Manage requests (create, update, delete) |
+| [request_info](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/request_info.py) | List or get request details |
+| [problem](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/problem.py) | Manage problems (create, update, delete) |
+| [problem_info](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/problem_info.py) | List or get problem details |
+| [change](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/change.py) | Manage changes (create, update, delete) |
+| [change_info](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/change_info.py) | List or get change details |
+| [release](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/release.py) | Manage releases (create, update, delete) |
+| [release_info](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/release_info.py) | List or get release details |
+| [read_record](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/read_record.py) | Generic read module for any supported entity |
+| [write_record](https://github.com/ManageEngine/manageengine.sdp_cloud/blob/main/plugins/modules/write_record.py) | Generic write module for any supported entity |
 
 ## Example Usage
 
@@ -231,6 +239,7 @@ For the latest changes, please refer to the [Changelogs](https://github.com/Mana
 ## Related Information
 
 - [ManageEngine ServiceDesk Plus Cloud](https://www.manageengine.com/products/service-desk/)
+- [SDP Cloud REST API v3 Reference](https://www.manageengine.com/products/service-desk/sdpod-v3-api/)
 - [Ansible Collection Documentation](https://docs.ansible.com/ansible/latest/collections/index.html)
 
 ## License Information

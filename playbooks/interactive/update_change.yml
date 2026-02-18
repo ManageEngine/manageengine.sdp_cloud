@@ -1,0 +1,55 @@
+---
+- name: Update a Change via write_record (Interactive)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - credentials.yml
+
+  vars_prompt:
+    - name: change_id
+      prompt: "Enter the Change ID to update"
+      private: false
+
+    - name: change_title
+      prompt: "Enter the new title for the change"
+      private: false
+
+  tasks:
+    - name: Validate inputs
+      ansible.builtin.assert:
+        that:
+          - change_id | length > 0
+          - change_title | length > 0
+        fail_msg: "Both Change ID and title are required. Please re-run and provide values."
+
+    - name: Fetch OAuth Token
+      manageengine.sdp_cloud.oauth_token:
+        client_id: "{{ client_id }}"
+        client_secret: "{{ client_secret }}"
+        refresh_token: "{{ refresh_token }}"
+        dc: "{{ dc }}"
+      register: token_output
+      no_log: true
+
+    - name: Update the Change using write_record
+      manageengine.sdp_cloud.write_record:
+        domain: "{{ domain }}"
+        parent_module_name: "change"
+        parent_id: "{{ change_id }}"
+        auth_token: "{{ token_output.access_token }}"
+        dc: "{{ dc }}"
+        portal_name: "{{ portal_name }}"
+        payload:
+          title: "{{ change_title }}"
+      register: updated_change
+
+    - name: Display updated change
+      ansible.builtin.debug:
+        msg:
+          - "══════════════════════════════════════════"
+          - "  Change updated successfully!"
+          - "  ID:    {{ updated_change.response.change.id | default('N/A') }}"
+          - "  Title: {{ updated_change.response.change.title | default('N/A') }}"
+          - "══════════════════════════════════════════"

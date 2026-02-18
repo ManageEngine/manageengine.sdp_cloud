@@ -28,32 +28,36 @@ options:
       - When provided, performs a C(GET /api/v3/requests/{id}) call and returns the single request.
       - When omitted, performs a list operation.
     type: str
-  list_options:
+  row_count:
     description:
-      - Pagination and sorting options for list operations.
+      - Number of records to return per page (1-100).
       - Ignored when C(request_id) is provided.
-    type: dict
-    suboptions:
-      row_count:
-        description: Number of records to return per page (1-100).
-        type: int
-        default: 10
-      start_index:
-        description: The starting index for pagination.
-        type: int
-      sort_field:
-        description: The field to sort results by.
-        type: str
-        default: created_time
-      sort_order:
-        description: Sort direction.
-        type: str
-        default: asc
-        choices: [asc, desc]
-      get_total_count:
-        description: Whether to include the total count of matching records.
-        type: bool
-        default: false
+    type: int
+    default: 10
+  start_index:
+    description:
+      - The starting index for pagination.
+      - Ignored when C(request_id) is provided.
+    type: int
+  sort_field:
+    description:
+      - The field to sort results by.
+      - Ignored when C(request_id) is provided.
+    type: str
+    default: created_time
+  sort_order:
+    description:
+      - Sort direction.
+      - Ignored when C(request_id) is provided.
+    type: str
+    default: asc
+    choices: [asc, desc]
+  get_total_count:
+    description:
+      - Whether to include the total count of matching records.
+      - Ignored when C(request_id) is provided.
+    type: bool
+    default: false
 '''
 
 EXAMPLES = r'''
@@ -72,10 +76,9 @@ EXAMPLES = r'''
     auth_token: "{{ auth_token }}"
     dc: "US"
     portal_name: "ithelpdesk"
-    list_options:
-      row_count: 10
-      sort_field: "created_time"
-      sort_order: "desc"
+    row_count: 10
+    sort_field: "created_time"
+    sort_order: "desc"
   register: request_list
 '''
 
@@ -88,11 +91,30 @@ request:
   description: The single request record (when request_id is provided).
   returned: when request_id is provided
   type: dict
+  sample:
+    id: "234567890123456"
+    subject: "Server down in DC-2"
+    status:
+      name: "Open"
+      id: "100000000000001"
+    priority:
+      name: "High"
+      id: "100000000000002"
+    requester:
+      email_id: "user@example.com"
+      name: "John Doe"
+      id: "100000000000003"
 requests:
   description: List of request records (when listing).
   returned: when request_id is omitted
   type: list
   elements: dict
+  sample:
+    - id: "234567890123456"
+      subject: "Server down in DC-2"
+      status:
+        name: "Open"
+        id: "100000000000001"
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -101,7 +123,9 @@ from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.api_util im
     AUTH_MUTUALLY_EXCLUSIVE, AUTH_REQUIRED_TOGETHER
 )
 from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.sdp_config import MODULE_CONFIG
-from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.read_helpers import construct_list_payload
+from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.read_helpers import (
+    construct_list_payload, list_info_argument_spec
+)
 
 ENTITY = 'request'
 
@@ -109,9 +133,9 @@ ENTITY = 'request'
 def run_module():
     config = MODULE_CONFIG[ENTITY]
     module_args = base_argument_spec()
+    module_args.update(list_info_argument_spec())
     module_args.update(dict(
         request_id=dict(type='str'),
-        list_options=dict(type='dict'),
     ))
 
     module = AnsibleModule(
@@ -130,7 +154,7 @@ def run_module():
 
     response = client.request(endpoint=endpoint, method='GET', data=data)
 
-    result = dict(changed=False, response=response, payload=data)
+    result = dict(changed=False, response=response)
     if module.params.get('request_id'):
         result[ENTITY] = response.get(ENTITY, {})
     else:

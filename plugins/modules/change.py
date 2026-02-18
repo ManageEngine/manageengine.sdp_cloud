@@ -110,13 +110,29 @@ response:
   returned: always
   type: dict
 change:
-  description: The change record from the API response (convenience accessor).
+  description: The change record from the API response.
   returned: on create or update
   type: dict
+  sample:
+    id: "234567890123456"
+    title: "Upgrade database server"
+    status:
+      name: "Requested"
+      id: "100000000000001"
+    priority:
+      name: "High"
+      id: "100000000000002"
+    change_type:
+      name: "Standard"
+      id: "100000000000005"
+    created_time:
+      display_value: "Nov 10, 2025 10:00 AM"
+      value: "1731234000000"
 change_id:
   description: The ID of the created, updated, or deleted change.
   returned: on create or update
   type: str
+  sample: "234567890123456"
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -146,7 +162,10 @@ def run_module():
         argument_spec=module_args,
         supports_check_mode=True,
         mutually_exclusive=AUTH_MUTUALLY_EXCLUSIVE,
-        required_together=AUTH_REQUIRED_TOGETHER
+        required_together=AUTH_REQUIRED_TOGETHER,
+        required_if=[
+            ('state', 'absent', ('change_id',)),
+        ],
     )
 
     module.params['parent_module_name'] = ENTITY

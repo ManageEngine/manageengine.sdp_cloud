@@ -15,16 +15,19 @@ options:
     description:
       - The Client ID generated from the Zoho API Console.
       - Required together with I(client_secret) and I(refresh_token) if I(auth_token) is not provided.
+      - If not set, the value of the E(SDP_CLOUD_CLIENT_ID) environment variable is used.
     type: str
   client_secret:
     description:
       - The Client Secret generated from the Zoho API Console.
       - Required together with I(client_id) and I(refresh_token) if I(auth_token) is not provided.
+      - If not set, the value of the E(SDP_CLOUD_CLIENT_SECRET) environment variable is used.
     type: str
   refresh_token:
     description:
       - The long-lived refresh token from the Zoho API Console.
       - Required together with I(client_id) and I(client_secret) if I(auth_token) is not provided.
+      - If not set, the value of the E(SDP_CLOUD_REFRESH_TOKEN) environment variable is used.
     type: str
   dc:
     description:

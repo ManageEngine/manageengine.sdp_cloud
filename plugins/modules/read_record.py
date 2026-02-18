@@ -19,13 +19,36 @@ extends_documentation_fragment:
   - manageengine.sdp_cloud.sdp
   - manageengine.sdp_cloud.auth
 options:
-  payload:
+  row_count:
     description:
-      - The input data for the API request.
-      - Used for list operations to control pagination and sorting.
-      - Supported keys are C(row_count) (1-100, default 10), C(sort_field), C(sort_order) (asc/desc), C(get_total_count), and C(start_index).
+      - Number of records to return per page (1-100).
       - Ignored when C(parent_id) is provided.
-    type: dict
+    type: int
+    default: 10
+  start_index:
+    description:
+      - The starting index for pagination.
+      - Ignored when C(parent_id) is provided.
+    type: int
+  sort_field:
+    description:
+      - The field to sort results by.
+      - Ignored when C(parent_id) is provided.
+    type: str
+    default: created_time
+  sort_order:
+    description:
+      - Sort direction.
+      - Ignored when C(parent_id) is provided.
+    type: str
+    default: asc
+    choices: [asc, desc]
+  get_total_count:
+    description:
+      - Whether to include the total count of matching records.
+      - Ignored when C(parent_id) is provided.
+    type: bool
+    default: false
 '''
 
 EXAMPLES = r'''
@@ -49,9 +72,8 @@ EXAMPLES = r'''
     refresh_token: "your_refresh_token"
     dc: "US"
     portal_name: "ithelpdesk"
-    payload:
-      row_count: 10
-      start_index: 1
+    row_count: 10
+    start_index: 1
 '''
 
 RETURN = r'''
@@ -59,6 +81,19 @@ response:
   description: The raw response from the SDP Cloud API.
   returned: always
   type: dict
+  sample:
+    response_status:
+      status_code: 2000
+      status: "success"
+    requests:
+      - id: "234567890123456"
+        subject: "Server down in DC-2"
+        status:
+          name: "Open"
+          id: "100000000000001"
+    list_info:
+      has_more_rows: true
+      row_count: 10
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -66,19 +101,18 @@ from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.api_util im
     SDPClient, common_argument_spec, check_module_config, construct_endpoint,
     AUTH_MUTUALLY_EXCLUSIVE, AUTH_REQUIRED_TOGETHER
 )
-
-# Re-export so existing tests that import construct_payload from this module continue to work
-from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.read_helpers import (  # noqa: F401
-    construct_list_payload as construct_payload,
+from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.read_helpers import (
+    construct_list_payload, list_info_argument_spec,
 )
+
+# Re-export for backward compatibility with existing tests
+construct_payload = construct_list_payload  # noqa: F841
 
 
 def run_module():
     """Main execution entry point for read module."""
     module_args = common_argument_spec()
-    module_args.update(dict(
-        payload=dict(type='dict')
-    ))
+    module_args.update(list_info_argument_spec())
 
     module = AnsibleModule(
         argument_spec=module_args,
@@ -92,8 +126,7 @@ def run_module():
     client = SDPClient(module)
     endpoint = construct_endpoint(module)
 
-    # Construct Payload
-    data = construct_payload(module)
+    data = construct_list_payload(module)
 
     response = client.request(
         endpoint=endpoint,
@@ -101,7 +134,7 @@ def run_module():
         data=data
     )
 
-    module.exit_json(changed=False, response=response, payload=data)
+    module.exit_json(changed=False, response=response)
 
 
 def main():

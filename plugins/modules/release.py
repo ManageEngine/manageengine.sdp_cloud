@@ -8,98 +8,100 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: request
+module: release
 author:
   - Harish Kumar (@harishkumar-k-7052)
-short_description: Manage requests in ManageEngine ServiceDesk Plus Cloud
+short_description: Manage releases in ManageEngine ServiceDesk Plus Cloud
 description:
-  - Creates, updates, or deletes request records in ManageEngine ServiceDesk Plus Cloud.
-  - When C(state=present) (default) and C(request_id) is omitted, creates a new request.
-    The C(subject) option is mandatory for create operations.
-  - When C(state=present) and C(request_id) is set, updates the existing request.
+  - Creates, updates, or deletes release records in ManageEngine ServiceDesk Plus Cloud.
+  - When C(state=present) (default) and C(release_id) is omitted, creates a new release.
+    The C(title) option is mandatory for create operations.
+  - When C(state=present) and C(release_id) is set, updates the existing release.
     Supports idempotency — skips the API call if no changes are detected.
-  - When C(state=absent), deletes the request identified by C(request_id).
+  - When C(state=absent), deletes the release identified by C(release_id).
   - Supports check mode and diff mode.
-  - See U(https://www.manageengine.com/products/service-desk/sdpod-v3-api/requests/request.html) for full API details.
+  - See U(https://www.manageengine.com/products/service-desk/sdpod-v3-api/releases/release.html) for full API details.
 extends_documentation_fragment:
   - manageengine.sdp_cloud.sdp_base
   - manageengine.sdp_cloud.auth
 options:
-  request_id:
+  release_id:
     description:
-      - The ID of an existing request record.
+      - The ID of an existing release record.
       - Required for update (C(state=present)) and delete (C(state=absent)) operations.
-      - Omit when creating a new request.
+      - Omit when creating a new release.
     type: str
   state:
     description:
-      - The desired state of the request.
-      - C(present) ensures the request exists (create or update).
-      - C(absent) ensures the request is deleted.
+      - The desired state of the release.
+      - C(present) ensures the release exists (create or update).
+      - C(absent) ensures the release is deleted.
     type: str
     default: present
     choices: [present, absent]
-  subject:
+  title:
     description:
-      - The subject / title of the request.
-      - B(Mandatory) when creating a new request (C(state=present) without C(request_id)).
+      - The title of the release.
+      - B(Mandatory) when creating a new release (C(state=present) without C(release_id)).
       - Optional when updating (only include to change it).
-      - Maximum 250 characters.
     type: str
   payload:
     description:
-      - A dictionary of additional request attributes to set.
-      - Supported fields include C(description), C(priority), C(urgency), C(impact),
-        C(status), C(requester), C(technician), C(group), C(category), C(subcategory),
-        C(item), C(due_by_time), C(template), C(mode), C(level), C(site),
-        C(on_behalf_of), C(editor), C(udf_fields), and more.
+      - A dictionary of additional release attributes to set.
+      - Supported fields include C(description), C(stage), C(status), C(template),
+        C(priority), C(urgency), C(impact), C(category), C(subcategory), C(item),
+        C(site), C(group), C(release_requester), C(release_engineer), C(release_manager),
+        C(release_type), C(reason_for_release), C(risk), C(workflow),
+        C(scheduled_start_time), C(scheduled_end_time), C(created_time), C(completed_time),
+        C(next_review_on), and grouped fields C(roll_out_plan_description),
+        C(back_out_plan_description).
       - For create, include all desired fields. For update, include only fields to change.
       - Not used when C(state=absent).
     type: dict
 '''
 
 EXAMPLES = r'''
-- name: Create a Request (minimal)
-  manageengine.sdp_cloud.request:
+- name: Create a Release (minimal)
+  manageengine.sdp_cloud.release:
     domain: "sdpondemand.manageengine.com"
     auth_token: "{{ auth_token }}"
     dc: "US"
     portal_name: "ithelpdesk"
-    subject: "Server down in DC-2"
+    title: "Q1 2026 Production Release"
 
-- name: Create a Request (with extra fields)
-  manageengine.sdp_cloud.request:
+- name: Create a Release (with extra fields)
+  manageengine.sdp_cloud.release:
     domain: "sdpondemand.manageengine.com"
     client_id: "your_client_id"
     client_secret: "your_client_secret"
     refresh_token: "your_refresh_token"
     dc: "US"
     portal_name: "ithelpdesk"
-    subject: "Server down in DC-2"
+    title: "Q1 2026 Production Release"
     payload:
-      description: "Web server unresponsive since 10:00 AM"
+      description: "Quarterly production deployment"
       priority: "High"
-      requester: "admin@example.com"
-      group: "Infrastructure"
+      release_engineer: "admin@example.com"
+      group: "Release Management"
 
-- name: Update a Request
-  manageengine.sdp_cloud.request:
+- name: Update a Release
+  manageengine.sdp_cloud.release:
     domain: "sdpondemand.manageengine.com"
     auth_token: "{{ auth_token }}"
     dc: "US"
     portal_name: "ithelpdesk"
-    request_id: "123456"
+    release_id: "123456"
     payload:
       priority: "Low"
       status: "In Progress"
 
-- name: Delete a Request
-  manageengine.sdp_cloud.request:
+- name: Delete a Release
+  manageengine.sdp_cloud.release:
     domain: "sdpondemand.manageengine.com"
     auth_token: "{{ auth_token }}"
     dc: "US"
     portal_name: "ithelpdesk"
-    request_id: "123456"
+    release_id: "123456"
     state: absent
 '''
 
@@ -108,31 +110,27 @@ response:
   description: The raw response from the SDP Cloud API.
   returned: always
   type: dict
-request:
-  description: The request record from the API response.
+release:
+  description: The release record from the API response.
   returned: on create or update
   type: dict
   sample:
     id: "234567890123456"
-    subject: "Server down in DC-2"
+    title: "Q1 2026 Production Release"
     status:
       name: "Open"
       id: "100000000000001"
     priority:
       name: "High"
       id: "100000000000002"
-    requester:
-      email_id: "user@example.com"
-      name: "John Doe"
-      id: "100000000000003"
-    group:
-      name: "Infrastructure"
-      id: "100000000000004"
+    stage:
+      name: "Planning"
+      id: "100000000000006"
     created_time:
       display_value: "Nov 10, 2025 10:00 AM"
       value: "1731234000000"
-request_id:
-  description: The ID of the created, updated, or deleted request.
+release_id:
+  description: The ID of the created, updated, or deleted release.
   returned: on create or update
   type: str
   sample: "234567890123456"
@@ -148,16 +146,16 @@ from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.write_helpe
     handle_absent, handle_present,
 )
 
-ENTITY = 'request'
+ENTITY = 'release'
 
 
 def run_module():
     config = MODULE_CONFIG[ENTITY]
     module_args = base_argument_spec()
     module_args.update(dict(
-        request_id=dict(type='str'),
+        release_id=dict(type='str'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
-        subject=dict(type='str'),
+        title=dict(type='str'),
         payload=dict(type='dict'),
     ))
 
@@ -167,12 +165,12 @@ def run_module():
         mutually_exclusive=AUTH_MUTUALLY_EXCLUSIVE,
         required_together=AUTH_REQUIRED_TOGETHER,
         required_if=[
-            ('state', 'absent', ('request_id',)),
+            ('state', 'absent', ('release_id',)),
         ],
     )
 
     module.params['parent_module_name'] = ENTITY
-    module.params['parent_id'] = module.params.get('request_id')
+    module.params['parent_id'] = module.params.get('release_id')
 
     client = SDPClient(module)
     endpoint = construct_endpoint(module)

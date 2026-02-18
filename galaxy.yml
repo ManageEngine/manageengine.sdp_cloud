@@ -1,6 +1,6 @@
 namespace: manageengine
 name: sdp_cloud
-version: 1.0.0
+version: 1.1.0
 readme: README.md
 authors:
   - Harish Kumar <harishkumar.k@zohocorp.com>
@@ -20,5 +20,6 @@ build_ignore:
   - .gitignore
   - .vscode
   - .venv
+  - .github/
   - playbooks
   - conftest.py

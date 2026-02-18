@@ -26,6 +26,7 @@ options:
     description:
       - The OAuth access token for authenticating API requests.
       - Mutually exclusive with I(client_id), I(client_secret), and I(refresh_token).
+      - If not set, the value of the E(SDP_CLOUD_AUTH_TOKEN) environment variable is used.
     type: str
   parent_module_name:
     description:

@@ -12,7 +12,7 @@ from plugins.module_utils.read_helpers import construct_list_payload
 
 
 # ---------------------------------------------------------------------------
-# construct_list_payload — via list_options (entity-specific path)
+# construct_list_payload — top-level params
 # ---------------------------------------------------------------------------
 class TestReleaseInfoListPayload:
     def test_returns_none_when_release_id_present(self):
@@ -20,27 +20,24 @@ class TestReleaseInfoListPayload:
         module = create_mock_module({
             'parent_id': '100',
             'parent_module_name': 'release',
-            'list_options': {'row_count': 10},
-            'payload': None,
-        })
-        assert construct_list_payload(module) is None
-
-    def test_returns_none_when_no_list_options(self):
-        module = create_mock_module({
-            'parent_id': None,
-            'parent_module_name': 'release',
-            'list_options': None,
-            'payload': None,
+            'row_count': 10,
+            'start_index': None,
+            'sort_field': 'created_time',
+            'sort_order': 'asc',
+            'get_total_count': False,
         })
         assert construct_list_payload(module) is None
 
     def test_default_values(self):
-        """When only row_count is specified, other fields get defaults."""
+        """When defaults are used, the payload reflects them."""
         module = create_mock_module({
             'parent_id': None,
             'parent_module_name': 'release',
-            'list_options': {'row_count': 10},
-            'payload': None,
+            'row_count': 10,
+            'start_index': None,
+            'sort_field': 'created_time',
+            'sort_order': 'asc',
+            'get_total_count': False,
         })
         result = construct_list_payload(module)
         assert result == {
@@ -56,14 +53,11 @@ class TestReleaseInfoListPayload:
         module = create_mock_module({
             'parent_id': None,
             'parent_module_name': 'release',
-            'list_options': {
-                'row_count': 50,
-                'sort_field': 'title',
-                'sort_order': 'desc',
-                'get_total_count': True,
-                'start_index': 5,
-            },
-            'payload': None,
+            'row_count': 50,
+            'start_index': 5,
+            'sort_field': 'title',
+            'sort_order': 'desc',
+            'get_total_count': True,
         })
         result = construct_list_payload(module)
         li = result['list_info']
@@ -77,8 +71,11 @@ class TestReleaseInfoListPayload:
         module = create_mock_module({
             'parent_id': None,
             'parent_module_name': 'release',
-            'list_options': {'sort_field': 'nonexistent_field'},
-            'payload': None,
+            'row_count': 10,
+            'start_index': None,
+            'sort_field': 'nonexistent_field',
+            'sort_order': 'asc',
+            'get_total_count': False,
         })
         with pytest.raises(SystemExit):
             construct_list_payload(module)
