@@ -123,4 +123,3 @@ class TestRequestConstructPayload:
         with pytest.raises(SystemExit):
             construct_payload(module)
         module.fail_json.assert_called_once()
-

@@ -55,4 +55,3 @@ class TestProblemTitleValidation:
         payload = module.params.get('payload') or {}
         assert payload.get('title') == 'Test Title'
         assert payload.get('priority') == 'High'
-

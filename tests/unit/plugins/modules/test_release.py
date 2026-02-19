@@ -55,4 +55,3 @@ class TestReleaseTitleValidation:
         payload = module.params.get('payload') or {}
         assert payload.get('title') == 'Test Release Title'
         assert payload.get('priority') == 'High'
-
