@@ -24,8 +24,8 @@
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
-        title: "Test Problem - Lifecycle Script"
         payload:
+          title: "Test Problem - Lifecycle Script"
           description: "Created via test_problem_module playbook"
           priority: "High"
       register: created_problem
@@ -44,8 +44,8 @@
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
-        title: "Test Problem - Updated"
         payload:
+          title: "Test Problem - Updated"
           priority: "Low"
       register: updated_problem
 

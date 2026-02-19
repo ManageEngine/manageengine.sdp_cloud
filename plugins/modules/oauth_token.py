@@ -71,6 +71,7 @@ token_type:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.api_util import sanitize_string_params
 from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.oauth import get_access_token
 
 
@@ -86,6 +87,8 @@ def run_module():
         argument_spec=module_args,
         supports_check_mode=True
     )
+
+    sanitize_string_params(module)
 
     client_id = module.params['client_id']
     client_secret = module.params['client_secret']

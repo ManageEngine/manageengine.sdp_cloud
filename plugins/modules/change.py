@@ -15,7 +15,7 @@ short_description: Manage changes in ManageEngine ServiceDesk Plus Cloud
 description:
   - Creates, updates, or deletes change records in ManageEngine ServiceDesk Plus Cloud.
   - When C(state=present) (default) and C(change_id) is omitted, creates a new change.
-    The C(title) option is mandatory for create operations.
+    The C(title) field inside C(payload) is mandatory for create operations.
   - When C(state=present) and C(change_id) is set, updates the existing change.
     Supports idempotency — skips the API call if no changes are detected.
   - When C(state=absent), deletes the change identified by C(change_id).
@@ -39,16 +39,11 @@ options:
     type: str
     default: present
     choices: [present, absent]
-  title:
-    description:
-      - The title of the change.
-      - B(Mandatory) when creating a new change (C(state=present) without C(change_id)).
-      - Optional when updating (only include to change it).
-    type: str
   payload:
     description:
-      - A dictionary of additional change attributes to set.
-      - Supported fields include C(description), C(comment), C(retrospective), C(stage),
+      - A dictionary of change attributes to set.
+      - The C(title) field is B(mandatory) when creating a new change.
+      - Supported fields include C(title), C(description), C(comment), C(retrospective), C(stage),
         C(status), C(template), C(priority), C(urgency), C(impact), C(category),
         C(subcategory), C(item), C(site), C(group), C(change_requester), C(change_manager),
         C(change_owner), C(change_type), C(reason_for_change), C(risk), C(workflow),
@@ -66,18 +61,19 @@ EXAMPLES = r'''
     auth_token: "{{ auth_token }}"
     dc: "US"
     portal_name: "ithelpdesk"
-    title: "Upgrade database server"
+    payload:
+      title: "Upgrade database server"
 
 - name: Create a Change (with extra fields)
   manageengine.sdp_cloud.change:
     domain: "sdpondemand.manageengine.com"
-    client_id: "your_client_id"
-    client_secret: "your_client_secret"
-    refresh_token: "your_refresh_token"
+    client_id: "{{ sdp_client_id }}"
+    client_secret: "{{ sdp_client_secret }}"
+    refresh_token: "{{ sdp_refresh_token }}"
     dc: "US"
     portal_name: "ithelpdesk"
-    title: "Upgrade database server"
     payload:
+      title: "Upgrade database server"
       description: "Upgrade PostgreSQL from 14 to 16"
       priority: "High"
       change_requester: "admin@example.com"
@@ -154,7 +150,6 @@ def run_module():
     module_args.update(dict(
         change_id=dict(type='str'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
-        title=dict(type='str'),
         payload=dict(type='dict'),
     ))
 

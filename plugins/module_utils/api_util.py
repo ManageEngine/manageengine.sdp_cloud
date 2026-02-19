@@ -33,6 +33,22 @@ AUTH_REQUIRED_TOGETHER = [
 ]
 
 
+def _strip_strings(value):
+    """Recursively strip leading/trailing whitespace from all strings."""
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, dict):
+        return {k: _strip_strings(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_strip_strings(item) for item in value]
+    return value
+
+
+def sanitize_string_params(module):
+    """Strip leading/trailing whitespace from every string in module params."""
+    module.params = _strip_strings(module.params)
+
+
 # Environment variable names for credential fallback
 ENV_AUTH_TOKEN = 'SDP_CLOUD_AUTH_TOKEN'
 ENV_CLIENT_ID = 'SDP_CLOUD_CLIENT_ID'
@@ -132,6 +148,7 @@ def construct_endpoint(module, operation=None):
 
 class SDPClient:
     def __init__(self, module):
+        sanitize_string_params(module)
         self.module = module
         self.params = module.params
         self.domain = self.params.get('domain')

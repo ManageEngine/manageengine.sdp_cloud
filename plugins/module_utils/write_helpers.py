@@ -175,8 +175,8 @@ def handle_absent(module, client, endpoint, entity_config):
 def handle_present(module, client, endpoint, entity_config):
     """Handle state=present (create/update) logic for any entity.
 
-    Handles mandatory field merging, validation, idempotency, check mode,
-    diff mode, and convenience return keys.
+    Handles validation, idempotency, check mode, diff mode, and
+    convenience return keys.
 
     Args:
         module: AnsibleModule instance.
@@ -195,12 +195,6 @@ def handle_present(module, client, endpoint, entity_config):
     mandatory_field = entity_config.get('mandatory_field')
 
     method = 'PUT' if parent_id else 'POST'
-
-    # Merge top-level mandatory field into payload (entity modules expose it as a top-level option)
-    if mandatory_field and module.params.get(mandatory_field):
-        if module.params.get('payload') is None:
-            module.params['payload'] = {}
-        module.params['payload'][mandatory_field] = module.params[mandatory_field]
 
     # Enforce mandatory field on create
     if method == 'POST' and mandatory_field:

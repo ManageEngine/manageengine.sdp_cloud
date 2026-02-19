@@ -20,11 +20,10 @@ REQUEST_CONFIG = MODULE_CONFIG['request']
 # ---------------------------------------------------------------------------
 class TestRequestSubjectValidation:
     def test_create_requires_subject(self):
-        """Creating a request without subject should fail."""
+        """Creating a request without subject in payload should fail."""
         module = create_mock_module({
             'parent_module_name': 'request',
             'parent_id': None,
-            'subject': None,
             'payload': {'description': 'No subject provided'},
             'state': 'present',
         })
@@ -34,11 +33,10 @@ class TestRequestSubjectValidation:
         assert 'subject' in module.fail_json.call_args[1]['msg'].lower()
 
     def test_create_requires_subject_empty_payload(self):
-        """Creating with empty payload and no subject should fail."""
+        """Creating with empty payload should fail."""
         module = create_mock_module({
             'parent_module_name': 'request',
             'parent_id': None,
-            'subject': None,
             'payload': None,
             'state': 'present',
         })
@@ -46,52 +44,16 @@ class TestRequestSubjectValidation:
             handle_present(module, None, 'requests', REQUEST_CONFIG)
         module.fail_json.assert_called_once()
 
-    def test_create_with_subject_option(self):
-        """Subject provided as top-level option should be merged into payload."""
-        module = create_mock_module({
-            'parent_module_name': 'request',
-            'parent_id': None,
-            'subject': 'Test Subject',
-            'payload': {'priority': 'High'},
-            'state': 'present',
-        })
-        # Simulate what handle_present does for subject merge
-        _merge_mandatory_field(module, REQUEST_CONFIG)
-        assert module.params['payload']['subject'] == 'Test Subject'
-        assert module.params['payload']['priority'] == 'High'
-
     def test_create_with_subject_in_payload(self):
-        """Subject can also be provided inside payload dict."""
+        """Subject provided inside payload dict should pass validation."""
         module = create_mock_module({
             'parent_module_name': 'request',
             'parent_id': None,
-            'subject': None,
             'payload': {'subject': 'From Payload', 'priority': 'Low'},
             'state': 'present',
         })
         payload = module.params.get('payload') or {}
         assert payload.get('subject') == 'From Payload'
-
-    def test_subject_option_overrides_payload(self):
-        """Top-level subject option should override subject in payload."""
-        module = create_mock_module({
-            'parent_module_name': 'request',
-            'parent_id': None,
-            'subject': 'Top Level Subject',
-            'payload': {'subject': 'Payload Subject'},
-            'state': 'present',
-        })
-        _merge_mandatory_field(module, REQUEST_CONFIG)
-        assert module.params['payload']['subject'] == 'Top Level Subject'
-
-
-def _merge_mandatory_field(module, config):
-    """Simulate the mandatory field merge logic from handle_present."""
-    field = config.get('mandatory_field')
-    if field and module.params.get(field):
-        if module.params.get('payload') is None:
-            module.params['payload'] = {}
-        module.params['payload'][field] = module.params[field]
 
 
 # ---------------------------------------------------------------------------

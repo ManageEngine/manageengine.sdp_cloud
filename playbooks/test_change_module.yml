@@ -24,8 +24,8 @@
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
-        title: "Test Change - Lifecycle Script"
         payload:
+          title: "Test Change - Lifecycle Script"
           description: "Created via test_change_module playbook"
           priority: "High"
       register: created_change
@@ -44,8 +44,8 @@
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
-        title: "Test Change - Updated"
         payload:
+          title: "Test Change - Updated"
           priority: "Low"
       register: updated_change
 

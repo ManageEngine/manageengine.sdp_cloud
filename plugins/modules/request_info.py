@@ -50,7 +50,7 @@ options:
       - Sort direction.
       - Ignored when C(request_id) is provided.
     type: str
-    default: asc
+    default: desc
     choices: [asc, desc]
   get_total_count:
     description:

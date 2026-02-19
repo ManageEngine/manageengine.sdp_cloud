@@ -15,7 +15,7 @@ short_description: Manage problems in ManageEngine ServiceDesk Plus Cloud
 description:
   - Creates, updates, or deletes problem records in ManageEngine ServiceDesk Plus Cloud.
   - When C(state=present) (default) and C(problem_id) is omitted, creates a new problem.
-    The C(title) option is mandatory for create operations.
+    The C(title) field inside C(payload) is mandatory for create operations.
   - When C(state=present) and C(problem_id) is set, updates the existing problem.
     Supports idempotency — skips the API call if no changes are detected.
   - When C(state=absent), deletes the problem identified by C(problem_id).
@@ -39,16 +39,11 @@ options:
     type: str
     default: present
     choices: [present, absent]
-  title:
-    description:
-      - The title of the problem.
-      - B(Mandatory) when creating a new problem (C(state=present) without C(problem_id)).
-      - Optional when updating (only include to change it).
-    type: str
   payload:
     description:
-      - A dictionary of additional problem attributes to set.
-      - Supported fields include C(description), C(impact_details), C(priority), C(urgency),
+      - A dictionary of problem attributes to set.
+      - The C(title) field is B(mandatory) when creating a new problem.
+      - Supported fields include C(title), C(description), C(impact_details), C(priority), C(urgency),
         C(impact), C(status), C(template), C(category), C(subcategory), C(item), C(site),
         C(group), C(requester), C(technician), C(reported_by), C(due_by_time), C(reported_time),
         C(closed_time), and grouped fields (C(impact_details_description), C(root_cause_description),
@@ -66,18 +61,19 @@ EXAMPLES = r'''
     auth_token: "{{ auth_token }}"
     dc: "US"
     portal_name: "ithelpdesk"
-    title: "Server connectivity issues in DC-2"
+    payload:
+      title: "Server connectivity issues in DC-2"
 
 - name: Create a Problem (with extra fields)
   manageengine.sdp_cloud.problem:
     domain: "sdpondemand.manageengine.com"
-    client_id: "your_client_id"
-    client_secret: "your_client_secret"
-    refresh_token: "your_refresh_token"
+    client_id: "{{ sdp_client_id }}"
+    client_secret: "{{ sdp_client_secret }}"
+    refresh_token: "{{ sdp_refresh_token }}"
     dc: "US"
     portal_name: "ithelpdesk"
-    title: "Server connectivity issues in DC-2"
     payload:
+      title: "Server connectivity issues in DC-2"
       description: "Web server unresponsive since 10:00 AM"
       priority: "High"
       requester: "admin@example.com"
@@ -154,7 +150,6 @@ def run_module():
     module_args.update(dict(
         problem_id=dict(type='str'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
-        title=dict(type='str'),
         payload=dict(type='dict'),
     ))
 

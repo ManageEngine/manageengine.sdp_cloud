@@ -24,8 +24,8 @@
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
-        subject: "Test Request - Lifecycle Script"
         payload:
+          subject: "Test Request - Lifecycle Script"
           description: "Created via test_request_module playbook"
           requester: "{{ requester }}"
       register: created_request
@@ -44,8 +44,8 @@
         auth_token: "{{ token_output.access_token }}"
         dc: "{{ dc }}"
         portal_name: "{{ portal_name }}"
-        subject: "Test Request - Updated"
         payload:
+          subject: "Test Request - Updated"
           priority: "Low"
       register: updated_request
 

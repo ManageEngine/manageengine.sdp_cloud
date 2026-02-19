@@ -16,6 +16,7 @@ from tests.unit.conftest import (
 from plugins.module_utils.api_util import (
     SDPClient, common_argument_spec, check_module_config, get_auth_params,
     construct_endpoint, get_current_record, has_differences, _values_match,
+    sanitize_string_params, _strip_strings,
 )
 
 
@@ -487,3 +488,85 @@ class TestValuesMatch:
 
     def test_dict_vs_scalar(self):
         assert _values_match({'name': 'x'}, 'x') is False
+
+
+# ---------------------------------------------------------------------------
+# _strip_strings / sanitize_string_params
+# ---------------------------------------------------------------------------
+class TestStripStrings:
+    def test_strips_plain_string(self):
+        assert _strip_strings('  hello  ') == 'hello'
+
+    def test_strips_strings_in_dict(self):
+        result = _strip_strings({'key': '  val  ', 'num': 42})
+        assert result == {'key': 'val', 'num': 42}
+
+    def test_strips_strings_in_nested_dict(self):
+        result = _strip_strings({'outer': {'inner': ' deep '}})
+        assert result == {'outer': {'inner': 'deep'}}
+
+    def test_strips_strings_in_list(self):
+        result = _strip_strings([' a ', ' b '])
+        assert result == ['a', 'b']
+
+    def test_leaves_non_strings_untouched(self):
+        assert _strip_strings(42) == 42
+        assert _strip_strings(None) is None
+        assert _strip_strings(True) is True
+
+
+class TestSanitizeStringParams:
+    def test_strips_top_level_params(self):
+        module = create_mock_module({
+            'domain': '  test.example.com  ',
+            'portal_name': ' myportal ',
+            'auth_token': '  tok  ',
+        })
+        sanitize_string_params(module)
+        assert module.params['domain'] == 'test.example.com'
+        assert module.params['portal_name'] == 'myportal'
+        assert module.params['auth_token'] == 'tok'
+
+    def test_strips_payload_values(self):
+        module = create_mock_module({
+            'domain': 'example.com',
+            'payload': {'subject': ' Test Subject ', 'priority': ' High '},
+        })
+        sanitize_string_params(module)
+        assert module.params['payload']['subject'] == 'Test Subject'
+        assert module.params['payload']['priority'] == 'High'
+
+    def test_strips_nested_payload_values(self):
+        module = create_mock_module({
+            'domain': 'example.com',
+            'payload': {
+                'requester': {'email_id': ' user@test.com '},
+                'udf_fields': {'udf_char1': ' value '},
+            },
+        })
+        sanitize_string_params(module)
+        assert module.params['payload']['requester']['email_id'] == 'user@test.com'
+        assert module.params['payload']['udf_fields']['udf_char1'] == 'value'
+
+    def test_none_and_int_params_unchanged(self):
+        module = create_mock_module({
+            'domain': 'example.com',
+            'parent_id': None,
+            'page': 1,
+        })
+        sanitize_string_params(module)
+        assert module.params['parent_id'] is None
+        assert module.params['page'] == 1
+
+    def test_sdpclient_init_sanitizes(self):
+        """SDPClient.__init__ calls sanitize, so URL is built from clean values."""
+        module = create_mock_module({
+            'domain': '  test.example.com  ',
+            'portal_name': '  myportal  ',
+            'auth_token': '  tok  ',
+            'client_id': None, 'client_secret': None,
+            'refresh_token': None, 'dc': 'US',
+        })
+        client = SDPClient(module)
+        assert client.base_url == 'https://test.example.com/app/myportal/api/v3'
+        assert client.auth_token == 'tok'

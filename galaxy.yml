@@ -20,6 +20,7 @@ build_ignore:
   - .gitignore
   - .vscode
   - .venv
-  - .github/
+  - .github
   - playbooks
   - conftest.py
+  - docs

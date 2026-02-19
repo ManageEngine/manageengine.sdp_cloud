@@ -15,25 +15,15 @@ from plugins.module_utils.write_helpers import handle_present
 RELEASE_CONFIG = MODULE_CONFIG['release']
 
 
-def _merge_mandatory_field(module, config):
-    """Simulate the mandatory field merge logic from handle_present."""
-    field = config.get('mandatory_field')
-    if field and module.params.get(field):
-        if module.params.get('payload') is None:
-            module.params['payload'] = {}
-        module.params['payload'][field] = module.params[field]
-
-
 # ---------------------------------------------------------------------------
 # Title validation on create
 # ---------------------------------------------------------------------------
 class TestReleaseTitleValidation:
     def test_create_requires_title(self):
-        """Creating a release without title should fail."""
+        """Creating a release without title in payload should fail."""
         module = create_mock_module({
             'parent_module_name': 'release',
             'parent_id': None,
-            'title': None,
             'payload': {'description': 'No title provided'},
             'state': 'present',
         })
@@ -43,11 +33,10 @@ class TestReleaseTitleValidation:
         assert 'title' in module.fail_json.call_args[1]['msg'].lower()
 
     def test_create_requires_title_empty_payload(self):
-        """Creating with empty payload and no title should fail."""
+        """Creating with empty payload should fail."""
         module = create_mock_module({
             'parent_module_name': 'release',
             'parent_id': None,
-            'title': None,
             'payload': None,
             'state': 'present',
         })
@@ -55,17 +44,16 @@ class TestReleaseTitleValidation:
             handle_present(module, None, 'releases', RELEASE_CONFIG)
         module.fail_json.assert_called_once()
 
-    def test_create_with_title_option(self):
-        """Title provided as top-level option should be merged into payload."""
+    def test_create_with_title_in_payload(self):
+        """Title provided inside payload dict should pass validation."""
         module = create_mock_module({
             'parent_module_name': 'release',
             'parent_id': None,
-            'title': 'Test Release Title',
-            'payload': {'priority': 'High'},
+            'payload': {'title': 'Test Release Title', 'priority': 'High'},
             'state': 'present',
         })
-        _merge_mandatory_field(module, RELEASE_CONFIG)
-        assert module.params['payload']['title'] == 'Test Release Title'
-        assert module.params['payload']['priority'] == 'High'
+        payload = module.params.get('payload') or {}
+        assert payload.get('title') == 'Test Release Title'
+        assert payload.get('priority') == 'High'
 
 

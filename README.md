@@ -141,10 +141,9 @@ When environment variables are set, you can omit the credential parameters from 
 **Get Request Details:**
 ```yaml
 - name: Get Request Details
-  manageengine.sdp_cloud.read_record:
+  manageengine.sdp_cloud.request_info:
     domain: "sdpondemand.manageengine.com"
-    parent_module_name: "request"
-    parent_id: "100"
+    request_id: "100"
     auth_token: "{{ auth_token.access_token }}"
     dc: "{{ dc }}"
     portal_name: "ithelpdesk"
@@ -153,12 +152,11 @@ When environment variables are set, you can omit the credential parameters from 
 **Create a Problem:**
 ```yaml
 - name: Create a Problem
-  manageengine.sdp_cloud.write_record:
+  manageengine.sdp_cloud.problem:
     auth_token: "{{ auth_token.access_token }}"
     dc: "{{ dc }}"
     domain: "sdpondemand.manageengine.com"
     portal_name: "ithelpdesk"
-    parent_module_name: "problem"
     payload:
       title: "Network Latency Issue"
       description: "Users reporting slow access to file server"
@@ -169,13 +167,12 @@ When environment variables are set, you can omit the credential parameters from 
 **Update a Problem:**
 ```yaml
 - name: Update a Problem
-  manageengine.sdp_cloud.write_record:
+  manageengine.sdp_cloud.problem:
     auth_token: "{{ auth_token.access_token }}"
     dc: "{{ dc }}"
     domain: "sdpondemand.manageengine.com"
     portal_name: "ithelpdesk"
-    parent_module_name: "problem"
-    parent_id: "100"
+    problem_id: "100"
     payload:
       title: "Updated Title"
       priority: "High"
@@ -184,12 +181,11 @@ When environment variables are set, you can omit the credential parameters from 
 **Create a Release:**
 ```yaml
 - name: Create a Release
-  manageengine.sdp_cloud.write_record:
+  manageengine.sdp_cloud.release:
     auth_token: "{{ auth_token.access_token }}"
     dc: "{{ dc }}"
     domain: "sdpondemand.manageengine.com"
     portal_name: "ithelpdesk"
-    parent_module_name: "release"
     payload:
       title: "Q3 Application Release"
       description: "Rolling out new features for Q3"
@@ -199,13 +195,12 @@ When environment variables are set, you can omit the credential parameters from 
 **Delete a Problem:**
 ```yaml
 - name: Delete a Problem
-  manageengine.sdp_cloud.write_record:
+  manageengine.sdp_cloud.problem:
     auth_token: "{{ auth_token.access_token }}"
     dc: "{{ dc }}"
     domain: "sdpondemand.manageengine.com"
     portal_name: "ithelpdesk"
-    parent_module_name: "problem"
-    parent_id: "100"
+    problem_id: "100"
     state: absent
 ```
 
