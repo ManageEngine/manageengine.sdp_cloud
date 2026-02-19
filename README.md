@@ -239,4 +239,4 @@ For the latest changes, please refer to the [Changelogs](https://github.com/Mana
 
 ## License Information
 
-This collection is licensed under the GNU General Public License v3.0 or later. See: https://www.gnu.org/licenses/gpl-3.0.txt
+This collection is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.txt) or later.
