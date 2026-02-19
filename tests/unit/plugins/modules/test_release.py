@@ -56,4 +56,3 @@ class TestReleaseTitleValidation:
         assert payload.get('title') == 'Test Release Title'
         assert payload.get('priority') == 'High'
 
-

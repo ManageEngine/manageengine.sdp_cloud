@@ -124,4 +124,3 @@ class TestRequestConstructPayload:
             construct_payload(module)
         module.fail_json.assert_called_once()
 
-
