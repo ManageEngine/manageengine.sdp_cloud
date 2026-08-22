@@ -1,0 +1,15 @@
+security_fixes:
+  - >-
+    api_util - the user-supplied ``domain`` parameter was interpolated into the
+    API base URL without validation, so a tampered playbook variable (shared
+    role, imported playbook, AWX survey or inventory) could point every module
+    at an attacker-controlled host and receive the live OAuth access token in
+    the ``Authorization`` header. ``domain`` is now checked against a
+    fail-closed allowlist of official ServiceDesk Plus Cloud hosts before any
+    request is made, and all modules using ``base_argument_spec()`` are covered.
+  - >-
+    api_util - ``portal_name`` and ``parent_id`` are also interpolated into the
+    request path and are now validated (slug and numeric respectively), and
+    every constructed URL is checked so it cannot escape the API base path.
+    This blocks redirecting an authenticated request to an arbitrary endpoint
+    via values such as ``parent_id: "../../other-endpoint"``.

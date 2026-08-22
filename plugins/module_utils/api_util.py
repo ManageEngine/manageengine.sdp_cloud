@@ -7,11 +7,15 @@ __metaclass__ = type
 
 import json
 import os
+import re
 import time
 from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.urls import fetch_url
 from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.oauth import get_access_token
-from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.sdp_config import DC_CHOICES, MODULE_CONFIG
+from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.sdp_config import (
+    ALLOWED_DOMAIN_SUFFIXES, DC_CHOICES, HOSTNAME_PATTERN, MODULE_CONFIG,
+    PARENT_ID_PATTERN, PORTAL_NAME_PATTERN,
+)
 
 from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.error_handler import handle_error
 try:
@@ -115,6 +119,75 @@ def get_auth_params(module):
     }
 
 
+_HOSTNAME_RE = re.compile(HOSTNAME_PATTERN)
+_PORTAL_NAME_RE = re.compile(PORTAL_NAME_PATTERN)
+_PARENT_ID_RE = re.compile(PARENT_ID_PATTERN)
+
+# Characters that would turn a host name into a URL with a different target
+# (scheme, userinfo, port, path, query or fragment).
+_FORBIDDEN_HOST_CHARS = ('/', '\\', '@', '?', '#', ':', ' ', '\t', '\r', '\n')
+
+
+def validate_domain(module, domain):
+    """Validate `domain` against a fail-closed allowlist of SDP Cloud hosts.
+
+    The OAuth access token is sent to whatever host `domain` names, so an
+    arbitrary value would leak the token to an attacker-controlled server.
+    Only bare host names under a ManageEngine/Zoho suffix are accepted.
+
+    Returns:
+        The normalised (lower-cased, dot-stripped) host name.
+    """
+    if not domain or not isinstance(domain, str):
+        module.fail_json(msg="domain is required and must be a host name string.")
+
+    host = domain.strip().rstrip('.').lower()
+
+    if '://' in host or any(char in host for char in _FORBIDDEN_HOST_CHARS):
+        module.fail_json(
+            msg="Invalid domain '{0}'. Provide a bare host name only "
+                "(no scheme, port, path or credentials).".format(domain)
+        )
+
+    if not _HOSTNAME_RE.match(host):
+        module.fail_json(msg="Invalid domain '{0}'. Not a valid host name.".format(domain))
+
+    if not host.endswith(ALLOWED_DOMAIN_SUFFIXES):
+        module.fail_json(
+            msg="Refusing to send credentials to untrusted host '{0}'. "
+                "domain must be a ServiceDesk Plus Cloud host ending in one of: "
+                "{1}".format(domain, ', '.join(ALLOWED_DOMAIN_SUFFIXES))
+        )
+
+    return host
+
+
+def validate_portal_name(module, portal_name):
+    """Validate `portal_name`; it is interpolated into the API path."""
+    if not portal_name or not isinstance(portal_name, str):
+        module.fail_json(msg="portal_name is required and must be a string.")
+
+    portal = portal_name.strip()
+    if not _PORTAL_NAME_RE.match(portal):
+        module.fail_json(
+            msg="Invalid portal_name '{0}'. Only letters, digits, hyphen and "
+                "underscore are allowed.".format(portal_name)
+        )
+
+    return portal
+
+
+def validate_parent_id(module, parent_id):
+    """Validate `parent_id`; it is appended to the API path."""
+    record_id = str(parent_id).strip()
+    if not _PARENT_ID_RE.match(record_id):
+        module.fail_json(
+            msg="Invalid record id '{0}'. Record ids must be numeric.".format(parent_id)
+        )
+
+    return record_id
+
+
 def check_module_config(module):
     """Validate that the parent module is configured in MODULE_CONFIG."""
     parent_module = module.params['parent_module_name']
@@ -137,7 +210,7 @@ def construct_endpoint(module, operation=None):
     endpoint = parent_config['endpoint']
 
     if parent_id:
-        endpoint += "/{0}".format(parent_id)
+        endpoint += "/{0}".format(validate_parent_id(module, parent_id))
 
     # Append convenience operation at the deepest level
     if operation:
@@ -151,8 +224,8 @@ class SDPClient:
         sanitize_string_params(module)
         self.module = module
         self.params = module.params
-        self.domain = self.params.get('domain')
-        self.portal = self.params.get('portal_name')
+        self.domain = validate_domain(module, self.params.get('domain'))
+        self.portal = validate_portal_name(module, self.params.get('portal_name'))
         self.auth_token = self.params.get('auth_token')
 
         # OAuth params
@@ -162,6 +235,15 @@ class SDPClient:
         self.dc = self.params.get('dc')
 
         self.base_url = "https://{0}/app/{1}/api/v3".format(self.domain, self.portal)
+
+    def _build_url(self, endpoint):
+        """Join an endpoint onto base_url, refusing anything that escapes it."""
+        raw = str(endpoint)
+        path = raw.lstrip('/')
+        if '://' in raw or raw.startswith('//') or '..' in path.split('/'):
+            self.module.fail_json(msg="Invalid API endpoint: {0}".format(endpoint))
+
+        return "{0}/{1}".format(self.base_url, path)
 
     # HTTP status codes that are safe to retry (transient errors)
     RETRYABLE_STATUS_CODES = (429, 500, 502, 503, 504)
@@ -206,7 +288,7 @@ class SDPClient:
         """
         self._ensure_auth()
 
-        url = "{0}/{1}".format(self.base_url, endpoint)
+        url = self._build_url(endpoint)
 
         headers = {
             'Authorization': 'Zoho-oauthtoken {0}'.format(self.auth_token),
@@ -286,7 +368,7 @@ class SDPClient:
         """Fetch a single record for idempotency checks. Returns None if not found."""
         self._ensure_auth()
 
-        url = "{0}/{1}".format(self.base_url, endpoint)
+        url = self._build_url(endpoint)
 
         headers = {
             'Authorization': 'Zoho-oauthtoken {0}'.format(self.auth_token),

@@ -16,7 +16,8 @@ from tests.unit.conftest import (
 from plugins.module_utils.api_util import (
     SDPClient, common_argument_spec, check_module_config, get_auth_params,
     construct_endpoint, get_current_record, has_differences, _values_match,
-    sanitize_string_params, _strip_strings,
+    sanitize_string_params, _strip_strings, validate_domain,
+    validate_portal_name, validate_parent_id,
 )
 
 
@@ -193,13 +194,13 @@ class TestSDPClient:
 
     def test_base_url_construction(self):
         client, _unused = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'myportal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
             'refresh_token': None, 'dc': 'US',
         })
-        assert client.base_url == 'https://test.example.com/app/myportal/api/v3'
+        assert client.base_url == 'https://sdpondemand.manageengine.com/app/myportal/api/v3'
 
     @patch(FETCH_URL_PATH)
     def test_request_get_success(self, mock_fetch):
@@ -207,7 +208,7 @@ class TestSDPClient:
         mock_fetch.return_value = build_fetch_url_response(api_response)
 
         client, module = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -224,7 +225,7 @@ class TestSDPClient:
         mock_fetch.return_value = build_fetch_url_response(api_response)
 
         client, module = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -250,7 +251,7 @@ class TestSDPClient:
         mock_fetch.return_value = build_fetch_url_response(error_response)
 
         client, module = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -266,7 +267,7 @@ class TestSDPClient:
         mock_fetch.return_value = build_fetch_url_error(401, msg='Unauthorized')
 
         client, module = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -283,7 +284,7 @@ class TestSDPClient:
         mock_fetch.return_value = build_fetch_url_response({'error': 'Not Found'}, status=404)
 
         client, module = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -309,7 +310,7 @@ class TestSDPClient:
         mock_fetch.side_effect = [error_response, success_response]
 
         client, module = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -326,7 +327,7 @@ class TestSDPClient:
         mock_fetch.return_value = build_fetch_url_error(404, msg='Not Found')
 
         client, module = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -342,7 +343,7 @@ class TestSDPClient:
         mock_fetch.return_value = build_fetch_url_response(record)
 
         client, module = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -354,7 +355,7 @@ class TestSDPClient:
 
     def test_missing_auth_fails(self):
         client, module = self._make_client({
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': None,
             'client_id': None, 'client_secret': None,
@@ -375,7 +376,7 @@ class TestGetCurrentRecord:
         module = create_mock_module({
             'parent_module_name': 'request',
             'parent_id': None,
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -392,7 +393,7 @@ class TestGetCurrentRecord:
         module = create_mock_module({
             'parent_module_name': 'request',
             'parent_id': '1',
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -409,7 +410,7 @@ class TestGetCurrentRecord:
         module = create_mock_module({
             'parent_module_name': 'request',
             'parent_id': '999',
-            'domain': 'test.example.com',
+            'domain': 'sdpondemand.manageengine.com',
             'portal_name': 'portal',
             'auth_token': 'tok',
             'client_id': None, 'client_secret': None,
@@ -518,12 +519,12 @@ class TestStripStrings:
 class TestSanitizeStringParams:
     def test_strips_top_level_params(self):
         module = create_mock_module({
-            'domain': '  test.example.com  ',
+            'domain': '  sdpondemand.manageengine.com  ',
             'portal_name': ' myportal ',
             'auth_token': '  tok  ',
         })
         sanitize_string_params(module)
-        assert module.params['domain'] == 'test.example.com'
+        assert module.params['domain'] == 'sdpondemand.manageengine.com'
         assert module.params['portal_name'] == 'myportal'
         assert module.params['auth_token'] == 'tok'
 
@@ -561,12 +562,149 @@ class TestSanitizeStringParams:
     def test_sdpclient_init_sanitizes(self):
         """SDPClient.__init__ calls sanitize, so URL is built from clean values."""
         module = create_mock_module({
-            'domain': '  test.example.com  ',
+            'domain': '  sdpondemand.manageengine.com  ',
             'portal_name': '  myportal  ',
             'auth_token': '  tok  ',
             'client_id': None, 'client_secret': None,
             'refresh_token': None, 'dc': 'US',
         })
         client = SDPClient(module)
-        assert client.base_url == 'https://test.example.com/app/myportal/api/v3'
+        assert client.base_url == 'https://sdpondemand.manageengine.com/app/myportal/api/v3'
         assert client.auth_token == 'tok'
+
+
+# ---------------------------------------------------------------------------
+# Security: domain / portal_name / parent_id validation (token exfiltration)
+# ---------------------------------------------------------------------------
+VALID_DOMAINS = [
+    'sdpondemand.manageengine.com',
+    'sdpondemand.manageengine.eu',
+    'sdpondemand.manageengine.com.au',
+    'sdpondemand.manageengine.jp',
+    'sdp.zoho.eu',
+    'SDPOnDemand.ManageEngine.com',
+    ' sdpondemand.manageengine.com. ',
+]
+
+REJECTED_DOMAINS = [
+    'evil.com',
+    'attacker.trycloudflare.com',
+    'manageengine.com.attacker.io',           # suffix in the middle
+    'evilmanageengine.com',                   # suffix without the dot boundary
+    'notzoho.com',
+    'sdpondemand.manageengine.com.evil.io',   # suffix spoof
+    'sdpondemand.manageengine.com:8443',      # port
+    'sdpondemand.manageengine.com/../evil',   # path
+    'user@evil.com',                          # userinfo
+    'evil.com#sdpondemand.manageengine.com',  # fragment trick
+    'evil.com?x=.manageengine.com',           # query trick
+    'https://sdpondemand.manageengine.com',   # scheme
+    'evil.com\\@sdpondemand.manageengine.com',
+    'localhost',
+    '127.0.0.1',
+    '',
+    None,
+]
+
+
+class TestValidateDomain:
+    @pytest.mark.parametrize('domain', VALID_DOMAINS)
+    def test_accepts_sdp_cloud_hosts(self, domain):
+        module = create_mock_module({})
+        assert validate_domain(module, domain) == domain.strip().rstrip('.').lower()
+        module.fail_json.assert_not_called()
+
+    @pytest.mark.parametrize('domain', REJECTED_DOMAINS)
+    def test_rejects_untrusted_hosts(self, domain):
+        module = create_mock_module({})
+        with pytest.raises(SystemExit):
+            validate_domain(module, domain)
+        module.fail_json.assert_called_once()
+
+    def test_client_refuses_attacker_domain(self):
+        module = create_mock_module({
+            'domain': 'attacker.trycloudflare.com',
+            'portal_name': 'ithelpdesk',
+            'auth_token': 'tok',
+            'client_id': None, 'client_secret': None,
+            'refresh_token': None, 'dc': 'US',
+        })
+        with pytest.raises(SystemExit):
+            SDPClient(module)
+
+    @patch(FETCH_URL_PATH)
+    def test_no_request_is_sent_to_untrusted_host(self, mock_fetch):
+        module = create_mock_module({
+            'domain': 'evil.com',
+            'portal_name': 'ithelpdesk',
+            'auth_token': 'tok',
+            'client_id': None, 'client_secret': None,
+            'refresh_token': None, 'dc': 'US',
+        })
+        with pytest.raises(SystemExit):
+            SDPClient(module)
+        mock_fetch.assert_not_called()
+
+
+class TestValidatePortalName:
+    @pytest.mark.parametrize('portal', ['ithelpdesk', 'IT-Portal_2', 'a'])
+    def test_accepts_slugs(self, portal):
+        module = create_mock_module({})
+        assert validate_portal_name(module, portal) == portal
+
+    @pytest.mark.parametrize('portal', [
+        '../../other-endpoint', 'it/helpdesk', 'it helpdesk', 'portal?x=1',
+        'portal#frag', '', None, 'a' * 65,
+    ])
+    def test_rejects_path_injection(self, portal):
+        module = create_mock_module({})
+        with pytest.raises(SystemExit):
+            validate_portal_name(module, portal)
+
+
+class TestValidateParentId:
+    @pytest.mark.parametrize('record_id', ['1', '100', '1234567890'])
+    def test_accepts_numeric_ids(self, record_id):
+        module = create_mock_module({})
+        assert validate_parent_id(module, record_id) == record_id
+
+    @pytest.mark.parametrize('record_id', [
+        '../../other-endpoint', '1/../2', 'abc', '1;2', '1 2', '',
+    ])
+    def test_rejects_path_traversal(self, record_id):
+        module = create_mock_module({})
+        with pytest.raises(SystemExit):
+            validate_parent_id(module, record_id)
+
+    def test_construct_endpoint_rejects_traversal(self):
+        module = create_mock_module({
+            'parent_module_name': 'request',
+            'parent_id': '../../other-endpoint',
+        })
+        with pytest.raises(SystemExit):
+            construct_endpoint(module)
+
+
+class TestBuildUrl:
+    def _client(self):
+        return SDPClient(create_mock_module({
+            'domain': 'sdpondemand.manageengine.com',
+            'portal_name': 'ithelpdesk',
+            'auth_token': 'tok',
+            'client_id': None, 'client_secret': None,
+            'refresh_token': None, 'dc': 'US',
+        }))
+
+    def test_normal_endpoint(self):
+        client = self._client()
+        assert client._build_url('requests/1') == (
+            'https://sdpondemand.manageengine.com/app/ithelpdesk/api/v3/requests/1'
+        )
+
+    @pytest.mark.parametrize('endpoint', [
+        '../../../evil', 'requests/../../evil', '//evil.com/x', 'https://evil.com/x',
+    ])
+    def test_rejects_endpoints_escaping_base_url(self, endpoint):
+        client = self._client()
+        with pytest.raises(SystemExit):
+            client._build_url(endpoint)

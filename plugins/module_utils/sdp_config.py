@@ -29,3 +29,52 @@ MODULE_CONFIG = {
     'change': CHANGE_CONFIG,
     'release': RELEASE_CONFIG,
 }
+
+
+# ---------------------------------------------------------------------------
+# Security: fail-closed allowlists for user-supplied connection parameters.
+#
+# The OAuth access token is attached to every request made against the host
+# built from the `domain` parameter, so an unvalidated `domain` lets anyone who
+# can influence playbook variables (shared role, imported playbook, AWX survey)
+# exfiltrate a live token. `domain`, `portal_name` and `parent_id` all feed the
+# request URL and are therefore validated before use.
+# ---------------------------------------------------------------------------
+
+# Only ServiceDesk Plus Cloud / Zoho-operated hosts may receive the token.
+# Leading dots are required so look-alikes such as "evilmanageengine.com" or
+# "manageengine.com.attacker.io" cannot match.
+ALLOWED_DOMAIN_SUFFIXES = (
+    '.manageengine.com',
+    '.manageengine.eu',
+    '.manageengine.in',
+    '.manageengine.com.au',
+    '.manageengine.com.cn',
+    '.manageengine.cn',
+    '.manageengine.jp',
+    '.manageengine.ca',
+    '.manageengine.sa',
+    '.servicedeskplus.com',
+    '.servicedeskplus.eu',
+    '.servicedeskplus.in',
+    '.servicedeskplus.net.au',
+    '.servicedeskplus.cn',
+    '.servicedeskplus.jp',
+    '.zoho.com',
+    '.zoho.eu',
+    '.zoho.in',
+    '.zoho.com.au',
+    '.zoho.com.cn',
+    '.zoho.jp',
+    '.zoho.ca',
+    '.zoho.sa',
+)
+
+# A plain DNS host name: labels of alphanumerics/hyphens, at least two labels.
+HOSTNAME_PATTERN = r'^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$'
+
+# Portal names are simple slugs (e.g. "ithelpdesk"); no path separators.
+PORTAL_NAME_PATTERN = r'^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$'
+
+# SDP record ids are numeric strings; blocks "../" path traversal.
+PARENT_ID_PATTERN = r'^[0-9]{1,20}$'
