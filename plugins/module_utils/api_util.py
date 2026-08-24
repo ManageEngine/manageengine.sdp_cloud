@@ -248,6 +248,12 @@ class SDPClient:
     # HTTP status codes that are safe to retry (transient errors)
     RETRYABLE_STATUS_CODES = (429, 500, 502, 503, 504)
 
+    # ansible.module_utils.urls follows redirects by default and re-attaches the
+    # original headers to the redirected request, including cross-host. Listing
+    # Authorization here means the token is dropped rather than forwarded if an
+    # allowlisted host ever redirects elsewhere.
+    UNREDIRECTED_HEADERS = ['Authorization']
+
     def _ensure_auth(self):
         """Ensure we have a valid auth token, generating one if needed.
 
@@ -306,7 +312,8 @@ class SDPClient:
                 url,
                 data=payload,
                 method=method,
-                headers=headers
+                headers=headers,
+                unredirected_headers=self.UNREDIRECTED_HEADERS
             )
 
             status_code = info.get('status', -1)
@@ -379,7 +386,8 @@ class SDPClient:
             self.module,
             url,
             method='GET',
-            headers=headers
+            headers=headers,
+            unredirected_headers=self.UNREDIRECTED_HEADERS
         )
 
         status_code = info.get('status', -1)

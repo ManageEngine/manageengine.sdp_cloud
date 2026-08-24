@@ -708,3 +708,28 @@ class TestBuildUrl:
         client = self._client()
         with pytest.raises(SystemExit):
             client._build_url(endpoint)
+
+
+class TestRedirectDoesNotForwardToken:
+    def _client(self):
+        return SDPClient(create_mock_module({
+            'domain': 'sdpondemand.manageengine.com',
+            'portal_name': 'ithelpdesk',
+            'auth_token': 'tok',
+            'client_id': None, 'client_secret': None,
+            'refresh_token': None, 'dc': 'US',
+        }))
+
+    @patch(FETCH_URL_PATH)
+    def test_request_marks_authorization_unredirected(self, mock_fetch):
+        mock_fetch.return_value = build_fetch_url_response({'requests': []})
+        self._client().request('requests', method='GET')
+        kwargs = mock_fetch.call_args[1]
+        assert kwargs['unredirected_headers'] == ['Authorization']
+
+    @patch(FETCH_URL_PATH)
+    def test_fetch_existing_record_marks_authorization_unredirected(self, mock_fetch):
+        mock_fetch.return_value = build_fetch_url_response({'request': {'id': '1'}})
+        self._client().fetch_existing_record('requests/1')
+        kwargs = mock_fetch.call_args[1]
+        assert kwargs['unredirected_headers'] == ['Authorization']

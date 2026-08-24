@@ -13,3 +13,9 @@ security_fixes:
     every constructed URL is checked so it cannot escape the API base path.
     This blocks redirecting an authenticated request to an arbitrary endpoint
     via values such as ``parent_id: "../../other-endpoint"``.
+  - >-
+    api_util - the OAuth token is no longer re-attached when a request is
+    redirected. ``ansible.module_utils.urls`` follows redirects by default and
+    preserves the original headers across hosts, so an open redirect on an
+    allowlisted host could otherwise still forward the token. ``Authorization``
+    is now passed via ``unredirected_headers``.
