@@ -49,6 +49,7 @@ Synopsis
 - Generates a temporary OAuth access token using a refresh token.
 - This token is required for authenticating against the ServiceDesk Plus Cloud API.
 - The access token is valid for 1 hour.
+- A successful result is treated as ``no_log`` by the paired action plugin, so the token is not written to callback output or ansible-runner/ansible-navigator artifacts; it remains available in the registered variable.
 
 
 .. Aliases

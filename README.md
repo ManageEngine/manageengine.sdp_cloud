@@ -136,6 +136,7 @@ When environment variables are set, you can omit the credential parameters from 
     refresh_token: "{{ refresh_token }}"
     dc: "{{ dc }}"
   register: auth_token
+  no_log: true
 ```
 
 **Get Request Details:**
