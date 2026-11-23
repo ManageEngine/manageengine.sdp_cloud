@@ -4,6 +4,22 @@ manageengine.sdp\_cloud Release Notes
 
 .. contents:: Topics
 
+v1.2.0
+======
+
+Release Summary
+---------------
+
+Security release. Validates user-supplied URL components, stops forwarding the OAuth token on redirects, and redacts the ``oauth_token`` access token from task output and ansible-runner/navigator artifacts.
+
+Security Fixes
+--------------
+
+- api_util - the user-supplied ``domain`` parameter was interpolated into the API base URL without validation, so a tampered playbook variable (shared role, imported playbook, AWX survey or inventory) could point every module at an attacker-controlled host and receive the live OAuth access token in the ``Authorization`` header. ``domain`` is now checked against a fail-closed allowlist of official ServiceDesk Plus Cloud hosts before any request is made, and all modules using ``base_argument_spec()`` are covered.
+- api_util - ``portal_name`` and ``parent_id`` are also interpolated into the request path and are now validated (slug and numeric respectively), and every constructed URL is checked so it cannot escape the API base path. This blocks redirecting an authenticated request to an arbitrary endpoint via values such as ``parent_id: "../../other-endpoint"``.
+- api_util - the OAuth token is no longer re-attached when a request is redirected. ``ansible.module_utils.urls`` follows redirects by default and preserves the original headers across hosts, so an open redirect on an allowlisted host could otherwise still forward the token. ``Authorization`` is now passed via ``unredirected_headers``.
+- oauth_token - the returned ``access_token`` is now redacted from callback output and ansible-runner/ansible-navigator artifacts through a new action plugin that flags successful results as ``no_log``. The registered variable still holds the real token for later tasks.
+
 v1.1.0
 ======
 

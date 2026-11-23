@@ -1,2 +1,0 @@
-security_fixes:
-  - oauth_token - the returned ``access_token`` is now redacted from callback output and ansible-runner/ansible-navigator artifacts through a new action plugin that flags successful results as ``no_log``. The registered variable still holds the real token for later tasks.
