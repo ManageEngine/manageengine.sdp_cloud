@@ -15,6 +15,8 @@ description:
   - Generates a temporary OAuth access token using a refresh token.
   - This token is required for authenticating against the ServiceDesk Plus Cloud API.
   - The access token is valid for 1 hour.
+  - A successful result is treated as C(no_log) by the paired action plugin, so the token is not written to
+    callback output or ansible-runner/ansible-navigator artifacts; it remains available in the registered variable.
 extends_documentation_fragment:
   - manageengine.sdp_cloud.auth
 options:
@@ -97,6 +99,9 @@ def run_module():
 
     data = get_access_token(module, client_id, client_secret, refresh_token, dc)
 
+    # The access token is a bearer credential. Redaction in callbacks and
+    # artifacts is applied by the paired action plugin (plugins/action/oauth_token.py),
+    # which flags the result as no_log while leaving the registered value usable.
     module.exit_json(
         changed=False,
         access_token=data['access_token'],

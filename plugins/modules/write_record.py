@@ -106,7 +106,7 @@ from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.api_util im
 from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.sdp_config import MODULE_CONFIG
 
 # Re-export helpers so existing tests that import from this module continue to work
-from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.write_helpers import (  # noqa: F401
+from ansible_collections.manageengine.sdp_cloud.plugins.module_utils.write_helpers import (  # noqa: F401  pylint: disable=unused-import
     resolve_field_metadata, transform_field_value, construct_payload,
     handle_absent, handle_present,
 )

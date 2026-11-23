@@ -13,13 +13,17 @@ class ModuleDocFragment(object):
 options:
   domain:
     description:
-      - The domain URL of your ServiceDesk Plus Cloud instance.
+      - The host name of your ServiceDesk Plus Cloud instance.
       - For example, C(sdpondemand.manageengine.com) or C(sdp.zoho.eu).
+      - Must be a bare host name (no scheme, port or path) under an official
+        ServiceDesk Plus Cloud domain. Any other host is rejected before the
+        OAuth token is sent, so a tampered value cannot leak credentials.
     type: str
     required: true
   portal_name:
     description:
       - The portal name of your ServiceDesk Plus Cloud instance (e.g., C(ithelpdesk)).
+      - Only letters, digits, hyphen and underscore are allowed.
     type: str
     required: true
   auth_token:
@@ -38,5 +42,6 @@ options:
     description:
       - The ID of the specific record to operate on.
       - Required for update, get-by-id, and delete operations.
+      - Must be numeric.
     type: str
 '''
